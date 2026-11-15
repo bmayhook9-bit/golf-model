@@ -118,6 +118,8 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
     <div class="brand"><h1>Golf Betting Desk</h1><small id="wkLabel"></small></div>
     <nav id="nav">
       <a href="#week" data-v="week">This week</a>
+      <a href="#fancies" data-v="fancies">My fancies</a>
+      <a href="#h2h" data-v="h2h">Head-to-head</a>
       <a href="#card" data-v="card">Betting card <span id="navCount" class="mono"></span></a>
       <a href="#players" data-v="players">Players</a>
       <a href="#courses" data-v="courses">Courses</a>
@@ -148,7 +150,8 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
         <div class="toolbar">
           <input id="q" placeholder="Find a player" aria-label="Find a player">
           <label class="note" for="mkt">Market</label>
-          <select id="mkt"><option value="win">Win</option><option value="t5">Top 5</option><option value="t10">Top 10</option><option value="t20">Top 20</option></select>
+          <select id="mkt"><option value="win">Win</option><option value="ew">Each way</option><option value="t5">Top 5</option><option value="t10">Top 10</option><option value="t20">Top 20</option></select>
+          <span id="ewTerms" class="row" style="display:none"><label class="note" for="ewF">Terms</label><select id="ewF"><option value="0.25">1/4</option><option value="0.2" selected>1/5</option></select><select id="ewP"><option>5</option><option>6</option><option>7</option><option selected>8</option><option>10</option></select><span class="note">places</span></span>
           <label class="row note"><input type="checkbox" id="onlyVal"> Only value</label>
           <span class="note" id="boardCount"></span>
         </div>
@@ -161,6 +164,27 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
       </div>
     </div>
     <aside class="cardpane" id="cardPane"></aside>
+  </div>
+</section>
+
+<!-- ============ FANCIES ============ -->
+<section class="view" id="v-fancies">
+  <div class="panel">
+    <h2>Check my fancies</h2>
+    <p class="note" style="margin:4px 0 10px">Add the players you like. Each gets a verdict for every market: the minimum price worth taking, strengths, red flags, and the best angle. Type a bookmaker price to get a yes or no.</p>
+    <div class="toolbar"><input id="fq" list="fieldlist" placeholder="Add a player from this week's field" style="min-width:280px" aria-label="Add fancy"><datalist id="fieldlist"></datalist><button class="primary" id="fadd">Add</button>
+      <span class="note">Each-way terms</span><select id="fEwF" aria-label="Each-way fraction"><option value="0.25">1/4</option><option value="0.2" selected>1/5</option></select><select id="fEwP" aria-label="Each-way places"><option>5</option><option>6</option><option>7</option><option selected>8</option><option>10</option></select></div>
+  </div>
+  <div class="wgrid" id="fgrid" style="grid-template-columns:repeat(auto-fill,minmax(560px,1fr));margin-top:16px"></div>
+</section>
+
+<!-- ============ H2H ============ -->
+<section class="view" id="v-h2h">
+  <div class="panel" style="max-width:860px">
+    <h2>Head-to-head</h2>
+    <p class="note" style="margin:4px 0 12px">Fair price for one player finishing ahead of another over 72 holes, from their ratings. Assumes a typical round-to-round spread; ties and missed cuts follow your bookmaker's rules (usually dead heat; both missing the cut is void).</p>
+    <div class="toolbar"><input id="ha" list="fieldlist" placeholder="Player A" aria-label="Player A"><span class="note">vs</span><input id="hb" list="fieldlist" placeholder="Player B" aria-label="Player B"></div>
+    <div id="h2hOut"></div>
   </div>
 </section>
 
@@ -233,18 +257,34 @@ function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add
 async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg); } catch { showText(text); } }
 function showText(text) { $('#dlgBody').innerHTML = `<div class="dlghead"><h2>Copy this</h2><button onclick="dlg.close()">Close</button></div><textarea style="width:100%;height:260px;font:13px var(--mono)" readonly>${esc(text)}</textarea>`; dlg.showModal(); }
 const dlg = $('#dlg');
-const MK = { win: { lab: 'Win', k: 1, tier: 'win' }, t5: { lab: 'Top 5', k: 5, tier: 't5' }, t10: { lab: 'Top 10', k: 10, tier: 't10' }, t20: { lab: 'Top 20', k: 20, tier: 't20' } };
+const MK = { win: { lab: 'Win', k: 1, tier: 'win' }, ew: { lab: 'Each way', k: 1, tier: 'win' }, t5: { lab: 'Top 5', k: 5, tier: 't5' }, t10: { lab: 'Top 10', k: 10, tier: 't10' }, t20: { lab: 'Top 20', k: 20, tier: 't20' }, h2h: { lab: 'Head-to-head', k: 1, tier: 'h2h' } };
+const MK_BOARD = ['win', 'ew', 't5', 't10', 't20'];
 const MARGIN = (D.meta && D.meta.edge_min) || 0.2;
 
 // ---------- state ----------
 const S = { ev: 0, mkt: 'win', q: '', onlyVal: false, sort: 'rank', prices: store.get('prices', {}), card: store.get('card', []),
-            tiers: store.get('tiers', { win: 500, t5: 100, t10: 75, t20: 50 }) };
+            tiers: Object.assign({ win: 500, t5: 100, t10: 75, t20: 50, h2h: 50 }, store.get('tiers', {})),
+            ew: store.get('ew', { f: 0.2, p: 8 }),
+            fancies: store.get('fancies', ['Michael Thorbjornsen', 'Sepp Straka', 'Cam Davis', 'Brooks Koepka', 'Denny McCarthy', 'Chris Kirk', 'Eric Cole', 'Harry Hall', 'Bud Cauley']) };
 const ev = () => D.events[S.ev];
 const pkey = (e, p, m) => `${e}|${p}|${m}`;
+function placeProb(r, n) {
+  // interpolate the model's finish-position curve on log scales: (1, win), (5, top5), (10, top10), (20, top20)
+  const pts = [[1, r.mw], [5, r.m5], [10, r.m10], [20, r.m20]].filter(p => p[1] > 0);
+  if (pts.length < 2) return null;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [n0, p0] = pts[i], [n1, p1] = pts[i + 1];
+    if (n <= n1) { const t = (Math.log(n) - Math.log(n0)) / (Math.log(n1) - Math.log(n0)); return Math.exp(Math.log(p0) + t * (Math.log(p1) - Math.log(p0))); }
+  }
+  return pts[pts.length - 1][1];
+}
 function fairProb(r, m) {
-  if (m === 'win') return r.isn ? 1 / r.isn : r.mw;
+  if (m === 'win' || m === 'ew') return r.isn ? 1 / r.isn : r.mw;
   return { t5: r.m5, t10: r.m10, t20: r.m20 }[m];
 }
+// each way: half on win, half on place at (price-1)*f + 1 over p places
+function ewEV(r, price, f, p) { const pw = fairProb(r, 'win'), pp = placeProb(r, p); if (!pw || !pp) return null; return 0.5 * (pw * price - 1) + 0.5 * (pp * (1 + (price - 1) * f) - 1); }
+function ewMinPrice(r, f, p, margin) { const pw = fairProb(r, 'win'), pp = placeProb(r, p); if (!pw || !pp) return null; return (2 * (1 + margin) - pp * (1 - f)) / (pw + pp * f); }
 function fairSource(r, m) { return m === 'win' && r.isn ? 'ISN' : 'model'; }
 function tierStake(m, price) { return Math.max(0, Math.round(100 * S.tiers[MK[m].tier] / Math.max(price - 1, 0.01)) / 100); }
 
@@ -268,13 +308,19 @@ function renderEvChips() {
 }
 function rowsWithValue() {
   const e = ev(); if (!e) return [];
-  return e.players.map(r => {
-    const fp = fairProb(r, S.mkt), fair = fp ? 1 / fp : null, target = fair ? fair * (1 + MARGIN) : null;
-    const yours = S.prices[pkey(e.name, r.k, S.mkt)];
-    const ref = yours || (S.mkt === 'win' ? r.bf : null);
-    const edge = fp && ref ? fp * ref - 1 : null;
-    return { ...r, fp, fair, target, yours, ref, edge, value: edge != null && edge >= MARGIN };
-  });
+  return e.players.map(r => verdictFor(e, r, S.mkt));
+}
+function verdictFor(e, r, m) {
+  const yours = S.prices[pkey(e.name, r.k, m === 'ew' ? 'win' : m)];
+  const ref = yours || ((m === 'win' || m === 'ew') ? r.bf : null);
+  if (m === 'ew') {
+    const fair = ewMinPrice(r, S.ew.f, S.ew.p, 0), target = ewMinPrice(r, S.ew.f, S.ew.p, MARGIN);
+    const edge = ref ? ewEV(r, ref, S.ew.f, S.ew.p) : null;
+    return { ...r, fp: fairProb(r, 'win'), fair, target, yours, ref, edge, value: edge != null && edge >= MARGIN };
+  }
+  const fp = fairProb(r, m), fair = fp ? 1 / fp : null, target = fair ? fair * (1 + MARGIN) : null;
+  const edge = fp && ref ? fp * ref - 1 : null;
+  return { ...r, fp, fair, target, yours, ref, edge, value: edge != null && edge >= MARGIN };
 }
 function finChips(l3) {
   return `<span class="form">${(l3 || '').split(' / ').filter(Boolean).map(f => { const n = parseInt(f); const c = f === 'MC' ? 'mc' : n === 1 ? 'w' : n <= 5 ? 't5' : ''; return `<span class="fin ${c}">${esc(f)}</span>`; }).join('')}</span>`;
@@ -303,10 +349,10 @@ function renderBoard() {
   rows.sort(sorters[S.sort] || sorters.rank);
   const mx = Math.max(...e.players.map(r => r.mw || 0));
   const m = S.mkt;
-  $('#fairNote').textContent = m === 'win' ? 'Win fair price: ISN where available' : `${MK[m].lab} fair price: build-up model`;
+  $('#fairNote').textContent = m === 'win' ? 'Win fair price: ISN where available' : m === 'ew' ? `Each way ${S.ew.f === 0.25 ? '1/4' : '1/5'} ${S.ew.p} places: fair = break-even win price, target = +${(MARGIN * 100).toFixed(0)}% expected return` : `${MK[m].lab} fair price: build-up model`;
   $('#boardCount').textContent = `${rows.length} players`;
   const onCard = new Set(S.card.filter(b => b.ev === e.name).map(b => b.k + '|' + b.m));
-  $('#board').innerHTML = `<thead><tr><th data-s="rank">#</th><th>Player</th><th>Last 3</th><th data-s="rank">Model win</th><th>${MK[m].lab} %</th><th data-s="fair">Fair</th><th>Target</th><th data-s="bf">Betfair</th><th>Your price</th><th data-s="edge">Edge</th><th></th><th>Why</th></tr></thead><tbody>` +
+  $('#board').innerHTML = `<thead><tr><th data-s="rank">#</th><th>Player</th><th>Last 3</th><th data-s="rank">Model win</th><th>${m === 'ew' ? 'Win' : MK[m].lab} %</th><th data-s="fair">Fair</th><th>Target</th><th data-s="bf">Betfair</th><th>Your price</th><th data-s="edge">Edge</th><th></th><th>Why</th></tr></thead><tbody>` +
     rows.map(r => `<tr class="${r.value ? 'hit' : ''}">
       <td class="n">${r.rank}</td>
       <td><button class="pname" data-k="${r.k}">${esc(r.p)}</button> ${r.lead && (r.bf || 99) < 20 ? '<span class="pill acc">lead</span>' : ''}</td>
@@ -315,7 +361,7 @@ function renderBoard() {
       <td class="n">${fmtP(r.fp)}</td>
       <td class="n" title="Source: ${fairSource(r, m)}">${fmtO(r.fair)}<span class="note"> ${fairSource(r, m) === 'ISN' ? 'ISN' : ''}</span></td>
       <td class="n"><b>${fmtO(r.target)}</b></td>
-      <td class="n">${m === 'win' ? fmtO(r.bf) : '–'}</td>
+      <td class="n">${m === 'win' || m === 'ew' ? fmtO(r.bf) : '–'}</td>
       <td><input class="price" inputmode="decimal" data-k="${r.k}" value="${r.yours ?? ''}" placeholder="–" aria-label="Your price for ${esc(r.p)}"></td>
       <td class="n">${r.edge == null ? '–' : `<span class="pill ${r.value ? 'good' : r.edge > 0 ? 'warn' : 'bad'}">${r.edge >= 0 ? '+' : ''}${(r.edge * 100).toFixed(0)}%</span>`}</td>
       <td><button class="sm ${r.value ? 'primary' : ''}" data-add="${r.k}" ${!r.ref || onCard.has(r.k + '|' + m) ? 'disabled' : ''}>${onCard.has(r.k + '|' + m) ? 'Added' : 'Add'}</button></td>
@@ -323,19 +369,24 @@ function renderBoard() {
   $$('#board th[data-s]').forEach(th => th.onclick = () => { S.sort = th.dataset.s; renderBoard(); });
   $$('#board .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
   $$('#board input.price').forEach(inp => inp.onchange = () => {
-    const v = parseFloat(inp.value); const k = pkey(e.name, inp.dataset.k, S.mkt);
+    const v = parseFloat(inp.value); const k = pkey(e.name, inp.dataset.k, S.mkt === 'ew' ? 'win' : S.mkt);
     if (v > 1) S.prices[k] = v; else delete S.prices[k];
     store.set('prices', S.prices); renderBoard(); renderScatter();
   });
   $$('#board [data-add]').forEach(b => b.onclick = () => addBet(b.dataset.add));
 }
-function addBet(k) {
-  const e = ev(); const r = rowsWithValue().find(x => x.k === k); if (!r || !r.ref) return;
-  S.card.push({ id: Date.now(), ev: e.name, k, p: r.p, m: S.mkt, price: r.ref, fp: r.fp, fair: r.fair, src: fairSource(r, S.mkt), stake: tierStake(S.mkt, r.ref), book: S.prices[pkey(e.name, k, S.mkt)] ? '' : 'Betfair' });
-  store.set('card', S.card); renderBoard(); renderCard(); toast(`${r.p} (${MK[S.mkt].lab}) added to card`);
+function addBet(k, m) {
+  m = m || S.mkt;
+  const e = ev(); const base = e.players.find(x => x.k === k); if (!base) return;
+  const r = verdictFor(e, base, m); if (!r.ref) return;
+  const b = { id: Date.now(), ev: e.name, k, p: r.p, m, price: r.ref, fp: r.fp, fair: r.fair, edge: r.edge, src: fairSource(r, m), stake: tierStake(m, r.ref), book: r.yours ? '' : 'Betfair' };
+  if (m === 'ew') { b.f = S.ew.f; b.places = S.ew.p; }
+  S.card.push(b); store.set('card', S.card); renderBoard(); renderCard(); if (location.hash === '#fancies') renderFancies(); toast(`${r.p} (${betLabel(b)}) added to card`);
 }
+function betLabel(b) { return b.m === 'ew' ? `Each way ${b.f === 0.25 ? '1/4' : '1/5'} ${b.places}pl` : b.m === 'h2h' ? `H2H vs ${b.opp}` : MK[b.m].lab; }
+function betEdge(b) { return b.edge != null ? b.edge : b.fp * b.price - 1; }
 function renderScatter() {
-  const e = ev(); const rows = rowsWithValue().filter(r => r.ref && r.fp);
+  const e = ev(); const rows = (S.mkt === 'ew' ? e.players.map(r => verdictFor(e, r, 'win')) : rowsWithValue()).filter(r => r.ref && r.fp);
   const ctx = $('#scatter');
   if (renderScatter.c) { renderScatter.c.destroy(); renderScatter.c = null; }
   ctx.parentElement.querySelectorAll('.empty').forEach(n => n.remove());
@@ -368,25 +419,25 @@ function roundChart(el, c) {
 
 // ---------- betting card ----------
 function cardHtml() {
-  const tot = S.card.reduce((a, b) => { const st = +b.stake || 0; a.stake += st; a.ev += st * (b.fp * b.price - 1); return a; }, { stake: 0, ev: 0 });
+  const tot = S.card.reduce((a, b) => { const st = +b.stake || 0; a.stake += st; a.ev += st * betEdge(b); return a; }, { stake: 0, ev: 0 });
   const byEv = {};
   S.card.forEach(b => (byEv[b.ev] = byEv[b.ev] || []).push(b));
   return `<div class="panel"><div class="row" style="justify-content:space-between"><h2>Betting card</h2><span class="pill">${S.card.length} bet${S.card.length === 1 ? '' : 's'}</span></div>
     <p class="note" style="margin:4px 0 10px">Stakes follow your target-profit tiers (stake = target ÷ (price − 1)). Edit any stake.</p>
     ${S.card.length ? Object.entries(byEv).map(([e, bs]) => `<div class="note" style="margin:8px 0 6px;font-weight:600">${esc(e)}</div>` + bs.map(b => {
-      const edge = b.fp * b.price - 1;
+      const edge = betEdge(b);
       return `<div class="betrow"><div><b>${esc(b.p)}</b> <span class="pill ${edge >= MARGIN ? 'good' : edge > 0 ? 'warn' : 'bad'}">${edge >= 0 ? '+' : ''}${(edge * 100).toFixed(0)}%</span></div>
         <div><button class="sm ghost" data-del="${b.id}" aria-label="Remove ${esc(b.p)}">Remove</button></div>
-        <div class="m">${MK[b.m].lab} @ <span class="mono">${fmtO(b.price)}</span> · fair ${fmtO(b.fair)} (${b.src})</div>
+        <div class="m">${esc(betLabel(b))} @ <span class="mono">${fmtO(b.price)}</span> · fair ${fmtO(b.fair)} (${b.src})</div>
         <div class="row" style="justify-content:end;gap:6px"><span class="m">£</span><input data-stake="${b.id}" value="${b.stake}" inputmode="decimal" aria-label="Stake"></div>
-        <div class="m">Returns £${((+b.stake || 0) * b.price).toFixed(2)} · <input data-book="${b.id}" value="${esc(b.book)}" placeholder="Bookmaker" style="width:110px;padding:2px 6px;font-size:12px" aria-label="Bookmaker"></div></div>`; }).join('')).join('')
+ <div class="m">${b.m === 'ew' ? `Win returns £${(((+b.stake || 0) / 2) * b.price + ((+b.stake || 0) / 2) * (1 + (b.price - 1) * b.f)).toFixed(2)}` : `Returns £${((+b.stake || 0) * b.price).toFixed(2)}`} · <input data-book="${b.id}" value="${esc(b.book)}" placeholder="Bookmaker" style="width:110px;padding:2px 6px;font-size:12px" aria-label="Bookmaker"></div></div>`; }).join('')).join('')
       : '<div class="empty">No bets yet. Add value rows from the market board.</div>'}
     <div class="totals"><span>Total stake</span><span class="v">£${tot.stake.toFixed(2)}</span>
       <span>Expected profit (fair prices)</span><span class="v" style="color:${tot.ev >= 0 ? 'var(--good)' : 'var(--bad)'}">${tot.ev >= 0 ? '+' : '−'}£${Math.abs(tot.ev).toFixed(2)}</span>
       <span>Biggest single return</span><span class="v">£${Math.max(0, ...S.card.map(b => (+b.stake || 0) * b.price)).toFixed(2)}</span></div>
     <div class="row"><button class="primary" id="cpLog" ${S.card.length ? '' : 'disabled'}>Copy for bet log</button><button id="cpTxt" ${S.card.length ? '' : 'disabled'}>Copy card as text</button><button class="ghost" id="clr" ${S.card.length ? '' : 'disabled'}>Clear</button></div>
     <details style="margin-top:12px"><summary class="note" style="cursor:pointer">Staking tiers (target profit per bet)</summary>
-      <div class="row" style="margin-top:8px">${Object.keys(MK).map(m => `<label class="note">${MK[m].lab} £<input data-tier="${m}" value="${S.tiers[m]}" style="width:64px" inputmode="decimal"></label>`).join('')}</div></details>
+      <div class="row" style="margin-top:8px">${['win', 't5', 't10', 't20', 'h2h'].map(m => `<label class="note">${m === 'win' ? 'Win / each way' : MK[m].lab} £<input data-tier="${m}" value="${S.tiers[m]}" style="width:64px" inputmode="decimal"></label>`).join('')}</div></details>
     <p class="note" style="margin-top:10px">"Copy for bet log" gives lines to paste into <span class="mono">bets/log.csv</span> on GitHub; results, closing prices and CLV fill in on Monday.</p></div>`;
 }
 function renderCard() {
@@ -398,8 +449,8 @@ function renderCard() {
   $$('[data-stake]').forEach(i => i.onchange = () => { const b = S.card.find(x => x.id == i.dataset.stake); b.stake = parseFloat(i.value) || 0; store.set('card', S.card); renderCard(); });
   $$('[data-book]').forEach(i => i.onchange = () => { const b = S.card.find(x => x.id == i.dataset.book); b.book = i.value; store.set('card', S.card); });
   $$('[data-tier]').forEach(i => i.onchange = () => { S.tiers[i.dataset.tier] = parseFloat(i.value) || S.tiers[i.dataset.tier]; store.set('tiers', S.tiers); S.card.forEach(b => b.stake = tierStake(b.m, b.price)); store.set('card', S.card); renderCard(); });
-  $$('#cpLog').forEach(b => b.onclick = () => { const d = new Date().toISOString().slice(0, 10); copy(S.card.map(b => [d, b.ev, b.p, b.m, b.price, b.stake, b.book || '', 'card'].map(x => String(x).includes(',') ? `"${x}"` : x).join(',')).join('\n'), 'Bet log lines copied'); });
-  $$('#cpTxt').forEach(b => b.onclick = () => copy(S.card.map(b => `${b.ev}: ${b.p} ${MK[b.m].lab} @ ${fmtO(b.price)} - £${b.stake}`).join('\n'), 'Card copied'));
+  $$('#cpLog').forEach(b => b.onclick = () => { const d = new Date().toISOString().slice(0, 10); copy(S.card.map(b => [d, b.ev, b.p, b.m === 'ew' ? `ew ${b.f === 0.25 ? '1/4' : '1/5'} ${b.places}` : b.m, b.price, b.stake, b.book || '', b.m === 'h2h' ? `vs ${b.opp}` : 'card'].map(x => String(x).includes(',') ? `"${x}"` : x).join(',')).join('\n'), 'Bet log lines copied'); });
+  $$('#cpTxt').forEach(b => b.onclick = () => copy(S.card.map(b => `${b.ev}: ${b.p} ${betLabel(b)} @ ${fmtO(b.price)} - £${b.stake}`).join('\n'), 'Card copied'));
   $$('#clr').forEach(b => b.onclick = () => { S.card = []; store.set('card', S.card); renderCard(); renderBoard(); });
 }
 
@@ -533,14 +584,112 @@ function renderTracker() {
   if (clv.length) { const xs = b.filter(x => x.clv != null && x.clv !== ''); new Chart($('#clvc'), { type: 'bar', data: { labels: xs.map(x => x.player), datasets: [{ data: xs.map(x => x.clv * 100), backgroundColor: xs.map(x => x.clv > 0 ? css('--good') : css('--bad')) }] }, options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: css('--muted'), callback: v => v + '%' }, grid: { color: css('--line') } }, x: { ticks: { color: css('--muted') }, grid: { display: false } } } } }); }
 }
 
+
+// ---------- fancies ----------
+const ord = n => { n = Math.round(n); const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+const ISN_LAB = { 'OTT Rank': 'Off the tee', 'Distance Rank': 'Driving distance', 'Accuracy Rank': 'Driving accuracy', 'APP Rank': 'Approach',
+  'APP 50-100 Rank': 'Approach 50-100y', 'APP 100-150 Rank': 'Approach 100-150y', 'APP 150-200 Rank': 'Approach 150-200y', 'APP 200+ Rank': 'Approach 200y+',
+  'ARG Rank': 'Around the green', 'Putting Total Rank': 'Putting', 'Bermuda Rank': 'Bermuda putting', 'Comp Courses Rank': 'Comparable courses',
+  'Course History Rank': 'Course history', 'Course Fit ADJ': 'Course fit' };
+function notesFor(e, r) {
+  const good = [], bad = [];
+  const n = D.isn_n || 140, cols = D.isn_cols || [];
+  (r.sk || []).forEach((v, i) => { const c = cols[i]; if (v == null) return;
+    if (c === 'Course Fit ADJ') { if (v >= 0.15) good.push(`ISN course fit +${v.toFixed(2)}`); if (v <= -0.15) bad.push(`ISN course fit ${v.toFixed(2)}`); return; }
+    if (/^APP \d|^APP 200/.test(c)) return;
+    if (v <= n * 0.15) good.push(`${ISN_LAB[c]} ${ord(v)} of ${n}`);
+    else if (v >= n * 0.7) bad.push(`${ISN_LAB[c]} ${ord(v)} of ${n}`); });
+  const p = D.players[r.k];
+  const ch = p && p.c && e.course && p.c[e.course];
+  if (ch) { const f = ch.split(' '), mc = f.filter(x => x === 'MC').length, t10 = f.filter(x => +x && +x <= 10).length;
+    if (mc >= 2) bad.push(`Missed the cut ${mc} of ${f.length} times here`); if (t10) good.push(`${t10} top-10${t10 > 1 ? 's' : ''} here (${ch})`); }
+  else bad.push('No starts at this course in the data');
+  const l = p ? p.s.slice(-5).map(s => s[4]) : [];
+  const mcs = l.filter(x => x === 'MC').length; if (mcs >= 2) bad.push(`${mcs} missed cuts in last 5`);
+  const wins = p ? p.s.slice(-6).filter(s => s[4] === '1').length : 0; if (wins) good.push(`Won in last 6 starts`);
+  if (r.isn && r.mw && r.isn > 1.6 / r.mw) bad.push('ISN rates him well below the build-up model');
+  return { good, bad };
+}
+function renderFancies() {
+  const e = ev(); if (!e) { $('#fgrid').innerHTML = '<div class="empty">No event this week yet.</div>'; return; }
+  $('#fieldlist').innerHTML = e.players.map(r => `<option value="${esc(r.p)}">`).join('');
+  $('#fEwF').value = String(S.ew.f); $('#fEwP').value = String(S.ew.p);
+  const rows = S.fancies.map(n => e.players.find(r => r.p.toLowerCase() === n.toLowerCase()) || { missing: n });
+  const onCard = new Set(S.card.filter(b => b.ev === e.name).map(b => b.k + '|' + b.m));
+  $('#fgrid').innerHTML = rows.map(r => {
+    if (r.missing) return `<div class="wcard"><div class="row" style="justify-content:space-between"><b>${esc(r.missing)}</b><button class="sm ghost" data-frm="${esc(r.missing)}">Remove</button></div><div class="empty">Not in this week's field.</div></div>`;
+    const nt = notesFor(e, r);
+    const mk = MK_BOARD.map(m => ({ m, v: verdictFor(e, r, m) }));
+    const withPrice = mk.filter(x => x.v.edge != null).sort((a, b) => b.v.edge - a.v.edge);
+    const best = withPrice.find(x => x.v.value);
+    const verdict = best ? `<span class="pill good">Back: ${best.m === 'ew' ? 'each way' : MK[best.m].lab.toLowerCase()} at ${fmtO(best.v.ref)}</span>`
+      : withPrice.length ? '<span class="pill bad">No value at your prices</span>' : '<span class="pill">Enter prices to get a verdict</span>';
+    const p = D.players[r.k] || {};
+    return `<div class="wcard" style="gap:10px">
+      <div class="row" style="justify-content:space-between"><div><h3 style="font-size:17px"><button class="pname" style="font-size:17px" data-k="${r.k}">${esc(r.p)}</button></h3>
+        <div class="kv"><span>ISN <b>${r.isnr ?? '–'}</b> of ${D.isn_n || '–'}</span><span>Model <b>${r.rank}</b> of ${e.players.length}</span><span>Rating <b>${p.r == null ? '–' : (p.r > 0 ? '+' : '') + p.r}</b></span></div></div>
+        <div class="row">${verdict}<button class="sm ghost" data-frm="${esc(r.p)}">Remove</button></div></div>
+      <div>${finChips(r.l3)} <span class="note">last 3, most recent first</span></div>
+      <div class="tablewrap"><table><thead><tr><th>Market</th><th>Chance</th><th>Fair</th><th>Back at</th><th>Your price</th><th>Edge</th><th></th></tr></thead><tbody>
+      ${mk.map(({ m, v }) => `<tr class="${v.value ? 'hit' : ''}"><td>${m === 'ew' ? `Each way <span class="note">${S.ew.f === 0.25 ? '1/4' : '1/5'} ${S.ew.p}pl</span>` : MK[m].lab}</td>
+        <td class="n">${m === 'ew' ? fmtP(placeProb(r, S.ew.p)) + '<span class="note"> place</span>' : fmtP(v.fp)}</td><td class="n">${fmtO(v.fair)}</td><td class="n"><b>${fmtO(v.target)}</b></td>
+        <td>${m === 'ew' ? `<span class="note">uses win price</span>` : `<input class="price" inputmode="decimal" data-fp="${r.k}" data-m="${m}" value="${v.yours ?? ''}" placeholder="${m === 'win' && r.bf ? r.bf : '–'}" aria-label="${esc(r.p)} ${MK[m].lab} price">`}</td>
+        <td class="n">${v.edge == null ? '–' : `<span class="pill ${v.value ? 'good' : v.edge > 0 ? 'warn' : 'bad'}">${v.edge >= 0 ? '+' : ''}${(v.edge * 100).toFixed(0)}%</span>`}</td>
+        <td><button class="sm ${v.value ? 'primary' : ''}" data-fadd="${r.k}" data-m="${m}" ${!v.ref || onCard.has(r.k + '|' + m) ? 'disabled' : ''}>${onCard.has(r.k + '|' + m) ? 'Added' : 'Add'}</button></td></tr>`).join('')}
+      </tbody></table></div>
+      <div class="grid2" style="gap:10px;grid-template-columns:1fr 1fr">
+        <div><div class="note" style="font-weight:600;color:var(--good)">In his favour</div>${nt.good.length ? nt.good.map(x => `<div class="note">+ ${esc(x)}</div>`).join('') : '<div class="note">Nothing stands out</div>'}</div>
+        <div><div class="note" style="font-weight:600;color:var(--bad)">Red flags</div>${nt.bad.length ? nt.bad.map(x => `<div class="note">− ${esc(x)}</div>`).join('') : '<div class="note">None</div>'}</div></div>
+    </div>`; }).join('') || '<div class="empty">Add the players you fancy to check them.</div>';
+  $$('#fgrid [data-frm]').forEach(b => b.onclick = () => { S.fancies = S.fancies.filter(n => n.toLowerCase() !== b.dataset.frm.toLowerCase()); store.set('fancies', S.fancies); renderFancies(); });
+  $$('#fgrid input[data-fp]').forEach(inp => inp.onchange = () => { const v = parseFloat(inp.value); const k = pkey(e.name, inp.dataset.fp, inp.dataset.m); if (v > 1) S.prices[k] = v; else delete S.prices[k]; store.set('prices', S.prices); renderFancies(); renderBoard(); });
+  $$('#fgrid [data-fadd]').forEach(b => b.onclick = () => addBet(b.dataset.fadd, b.dataset.m));
+  $$('#fgrid .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
+}
+function addFancy() { const n = $('#fq').value.trim(); if (!n) return; if (!S.fancies.some(x => x.toLowerCase() === n.toLowerCase())) S.fancies.push(n); store.set('fancies', S.fancies); $('#fq').value = ''; renderFancies(); }
+
+// ---------- head-to-head ----------
+const H2H_MARGIN = 0.05;   // matchups are lower variance than outrights: a smaller margin
+function ncdf(x) { const t = 1 / (1 + 0.2316419 * Math.abs(x)), d = 0.3989423 * Math.exp(-x * x / 2); const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274)))); return x > 0 ? 1 - p : p; }
+function renderH2H() {
+  const e = ev(); if (!e) return;
+  $('#fieldlist').innerHTML = e.players.map(r => `<option value="${esc(r.p)}">`).join('');
+  if (!$('#ha').value && S.fancies[0]) { $('#ha').value = S.fancies[0]; $('#hb').value = S.fancies[1] || ''; }
+  const find = n => e.players.find(r => r.p.toLowerCase() === (n || '').toLowerCase());
+  const a = find($('#ha').value), b = find($('#hb').value);
+  if (!a || !b || a === b) { $('#h2hOut').innerHTML = '<div class="empty">Pick two different players from this week\'s field.</div>'; return; }
+  const ra = (D.players[a.k] || {}).r, rb = (D.players[b.k] || {}).r;
+  if (ra == null || rb == null) { $('#h2hOut').innerHTML = '<div class="empty">One of these players has too few recent rounds for a rating.</div>'; return; }
+  const sd = 2.75 * Math.SQRT2 * 2;            // 72-hole score difference: ~2.75 per player per round
+  const pa = ncdf(4 * (ra - rb) / sd), pb = 1 - pa;
+  const key = pkey(e.name, a.k + '>' + b.k, 'h2h'), keyB = pkey(e.name, b.k + '>' + a.k, 'h2h');
+  const ya = S.prices[key], yb = S.prices[keyB];
+  const side = (r, p, y, kk, opp) => { const fair = 1 / p, tgt = fair * (1 + H2H_MARGIN), edge = y ? p * y - 1 : null, val = edge != null && edge >= H2H_MARGIN;
+    return `<div class="tile" style="min-height:0"><span class="lab">${esc(r.p)} to beat ${esc(opp.p)}</span><span class="big num">${fmtP(p)}</span>
+      <span class="sub">Fair ${fmtO(fair)} · back at <b>${fmtO(tgt)}</b>+</span>
+      <div class="row" style="margin-top:6px"><input class="price" inputmode="decimal" data-hk="${kk}" value="${y ?? ''}" placeholder="price" aria-label="Price">
+      ${edge == null ? '' : `<span class="pill ${val ? 'good' : edge > 0 ? 'warn' : 'bad'}">${edge >= 0 ? '+' : ''}${(edge * 100).toFixed(0)}%</span>`}
+      <button class="sm ${val ? 'primary' : ''}" data-hadd="${r.k}|${opp.k}|${p}" ${y ? '' : 'disabled'}>Add</button></div></div>`; };
+  $('#h2hOut').innerHTML = `<div class="tiles">${side(a, pa, ya, key, b)}${side(b, pb, yb, keyB, a)}</div>
+    <div class="kv"><span>${esc(a.p)} rating <b>${ra > 0 ? '+' : ''}${ra}</b></span><span>${esc(b.p)} rating <b>${rb > 0 ? '+' : ''}${rb}</b></span><span>Gap <b>${(ra - rb).toFixed(2)}</b> strokes/round</span></div>
+    <p class="note">Ratings only: no course fit or form adjustment yet, so treat close calls with care. Value margin for matchups: +${H2H_MARGIN * 100}%.</p>`;
+  $$('#h2hOut input[data-hk]').forEach(inp => inp.onchange = () => { const v = parseFloat(inp.value); if (v > 1) S.prices[inp.dataset.hk] = v; else delete S.prices[inp.dataset.hk]; store.set('prices', S.prices); renderH2H(); });
+  $$('#h2hOut [data-hadd]').forEach(btn => btn.onclick = () => { const [k1, k2, p] = btn.dataset.hadd.split('|'); const r1 = e.players.find(x => x.k === k1), r2 = e.players.find(x => x.k === k2);
+    const y = S.prices[pkey(e.name, k1 + '>' + k2, 'h2h')]; const pp = +p;
+    S.card.push({ id: Date.now(), ev: e.name, k: k1, p: r1.p, m: 'h2h', opp: r2.p, price: y, fp: pp, fair: 1 / pp, edge: pp * y - 1, src: 'ratings', stake: tierStake('h2h', y), book: '' });
+    store.set('card', S.card); renderCard(); toast(`${r1.p} to beat ${r2.p} added`); });
+}
+
 // ---------- routing ----------
-const VIEWS = ['week', 'card', 'players', 'courses', 'trends', 'winners', 'tracker', 'f1'];
+const VIEWS = ['week', 'fancies', 'h2h', 'card', 'players', 'courses', 'trends', 'winners', 'tracker', 'f1'];
 const rendered = {};
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'week';
   $$('.view').forEach(s => s.classList.toggle('on', s.id === 'v-' + v));
   $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.v === v));
   if (v === 'players') renderPlayers();
+  if (v === 'fancies') renderFancies();
+  if (v === 'h2h') renderH2H();
   if (v === 'courses') renderCourses();
   if (v === 'trends' && !rendered.trends) { renderTrends(); rendered.trends = 1; }
   if (v === 'winners' && !rendered.winners) { renderWinners(); rendered.winners = 1; }
@@ -548,7 +697,13 @@ function route() {
 }
 function renderWeek() { renderEvChips(); renderBoard(); renderScatter(); if (ev()) renderCoursePanel(); }
 $('#q').oninput = e => { S.q = e.target.value; renderBoard(); };
-$('#mkt').onchange = e => { S.mkt = e.target.value; renderBoard(); renderScatter(); };
+$('#mkt').onchange = e => { S.mkt = e.target.value; $('#ewTerms').style.display = S.mkt === 'ew' ? 'inline-flex' : 'none'; renderBoard(); renderScatter(); };
+const setEw = (f, p) => { S.ew = { f: +f, p: +p }; store.set('ew', S.ew); $('#ewF').value = String(S.ew.f); $('#ewP').value = String(S.ew.p); renderBoard(); if (location.hash === '#fancies') renderFancies(); };
+$('#ewF').onchange = () => setEw($('#ewF').value, $('#ewP').value); $('#ewP').onchange = () => setEw($('#ewF').value, $('#ewP').value);
+$('#fEwF').onchange = () => setEw($('#fEwF').value, $('#fEwP').value); $('#fEwP').onchange = () => setEw($('#fEwF').value, $('#fEwP').value);
+$('#fadd').onclick = addFancy; $('#fq').onkeydown = e => { if (e.key === 'Enter') addFancy(); };
+$('#ha').onchange = renderH2H; $('#hb').onchange = renderH2H;
+$('#ewF').value = String(S.ew.f); $('#ewP').value = String(S.ew.p);
 $('#onlyVal').onchange = e => { S.onlyVal = e.target.checked; renderBoard(); };
 Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
 renderStatus(); renderWeek(); renderCard(); route();

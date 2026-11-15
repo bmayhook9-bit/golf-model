@@ -43,6 +43,26 @@ for ev, g in (B.groupby('event', sort=False) if not B.empty else []):
     crs = E.loc[sc.idxmax(), 'course'] if len(sc) and sc.max() >= 70 else None
     nm_out = str(ev).strip(); nm_out = nm_out.title().replace('Rsm', 'RSM') if nm_out == nm_out.lower() else nm_out
     events.append(dict(name=nm_out, tour=g.tour.iloc[0], course=crs, players=rows))
+# ISN skill notes for the week (ranks are within the ISN field; lower = better)
+isn_fn = sorted(glob.glob('inbox/isn/*.csv'), key=os.path.getmtime)
+ISK = {}
+if isn_fn:
+    I = pd.read_csv(isn_fn[-1])
+    keep = [c for c in ['OTT Rank', 'Distance Rank', 'Accuracy Rank', 'APP Rank', 'APP 50-100 Rank', 'APP 100-150 Rank', 'APP 150-200 Rank',
+                        'APP 200+ Rank', 'ARG Rank', 'Putting Total Rank', 'Bermuda Rank', 'Comp Courses Rank', 'Course History Rank', 'Course Fit ADJ']
+            if c in I.columns]
+    D['isn_cols'] = keep; D['isn_n'] = int(len(I))
+    I['_p'] = 100 / (I['Win Odds'] + 100); I['_p'] = I._p / I._p.sum()     # ISN fair win probability, margin-free
+    ISNP = {key(p): (1 / q, int(rk)) for p, q, rk in zip(I.Player, I._p, I['Model Rank']) if q == q}
+    for r in I.to_dict('records'):
+        ISK[key(r['Player'])] = [rd(r[c], 2) for c in keep]
+else:
+    ISNP = {}
+for e in events:
+    for r in e['players']:
+        if r['k'] in ISK: r['sk'] = ISK[r['k']]
+        if e['tour'] == 'pga' and r['k'] in ISNP:            # ISN covers the PGA Tour: fair price + rank for every player
+            r['isn'] = rd(ISNP[r['k']][0], 1); r['isnr'] = ISNP[r['k']][1]
 D['events'] = events
 
 # ---------- players (anyone who played since 2025) ----------

@@ -1,0 +1,140 @@
+event,tour,rank,player,model_win,model_top5,betfair_back,last3,why
+rsm classic,pga,1,Ludvig Åberg,0.060333258546930155,0.17346702335717484,,7 / 11 / 27,"class (rating), top 5s in last 5, good course history"
+rsm classic,pga,2,Michael Brennan,0.048309041918935994,0.1376573352324193,,1 / 13 / 10,"class (rating), top 5s in last 5, won in last 3"
+rsm classic,pga,3,Blades Brown,0.033006688838839296,0.10559436128832422,,1 / 19 / 17,"class (rating), won in last 3, top 5s in last 5"
+rsm classic,pga,4,Ben James,0.030804943490881993,0.1168535889844946,,2 / 16 / MC,"class (rating), top 5s in last 5, top 5 last start"
+rsm classic,pga,5,Doug Ghim,0.025559741234602845,0.10793435878697792,,6 / 17 / 2,"class (rating), top 5s in last 5"
+rsm classic,pga,6,Keith Mitchell,0.024970671243230977,0.10646851236626695,,8 / 2 / 34,"class (rating), top 5s in last 5, good course history"
+rsm classic,pga,7,Matt Wallace,0.024728290215388835,0.10076640018340888,,16 / 27 / 50,class (rating)
+rsm classic,pga,8,Brian Harman,0.02399723597664354,0.0784915463580025,,4 / 30 / MC,"class (rating), top 5s in last 5, top 5 last start"
+rsm classic,pga,9,Andrew Novak,0.023049708453661766,0.07393853418472612,,1 / 44 / 17,"class (rating), won in last 3, top 5s in last 5"
+rsm classic,pga,10,Austin Smotherman,0.02147215107807375,0.07572002794698511,,1 / 1 / 17,"class (rating), top 5s in last 5, won in last 3"
+rsm classic,pga,11,J.T. Poston,0.021055667446280492,0.072276341149456,,5 / 22 / 24,"class (rating), top 5s in last 5, top 5 last start"
+rsm classic,pga,12,Maverick McNealy,0.020019422241789358,0.07918138623570055,,59 / MC / 7,class (rating)
+rsm classic,pga,13,Jordan Smith,0.01917937577742575,0.08425205445215513,,8 / 16 / 4,"class (rating), top 5s in last 5"
+rsm classic,pga,14,Jackson Koivun,0.01803093263667354,0.08814631294028573,,21 / 65 / 5,"class (rating), top 5s in last 5"
+rsm classic,pga,15,Ben Kohles,0.017900110007697,0.07856007252563137,,25 / 17 / 17,"class (rating), good course history"
+rsm classic,pga,16,Harry Hall,0.017474632796565987,0.07879918258356357,,12 / 23 / 13,"class (rating), top 5s in last 5"
+rsm classic,pga,17,Keegan Bradley,0.016941574965466534,0.07412172818291131,,41 / 49 / 15,"class (rating), good course history"
+rsm classic,pga,18,Michael Thorbjornsen,0.016425279405940234,0.07923068851194624,,33 / 37 / 47,"class (rating), top 5s in last 5, good course history"
+rsm classic,pga,19,Brooks Koepka,0.013329354478163353,0.061290478986235394,,6 / MC / 55,class (rating)
+rsm classic,pga,20,Chris Kirk,0.013126154950422395,0.061986944219026424,,12 / 6 / 21,class (rating)
+rsm classic,pga,21,Harris English,0.013012532787415832,0.050643309108109845,,42 / MC / 71,class (rating)
+rsm classic,pga,22,Denny McCarthy,0.012640580770309526,0.05776642468690418,,6 / 23 / 15,class (rating)
+rsm classic,pga,23,Sepp Straka,0.012630520408177592,0.05330700086619698,,23 / 15 / 63,class (rating)
+rsm classic,pga,24,Alex Smalley,0.010843768349017062,0.06316921465402967,,63 / 62 / 27,"class (rating), form trending up"
+rsm classic,pga,25,Ricky Castillo,0.01039405830652516,0.05794881828570154,,29 / 3 / 63,"class (rating), top 5s in last 5, good course history"
+rsm classic,pga,26,Kristoffer Ventura,0.009781177319658942,0.060551216581522536,,50 / 2 / 34,"class (rating), top 5s in last 5"
+rsm classic,pga,27,Zac Blair,0.009759596916029664,0.0512850503818048,,25 / MC / 25,"class (rating), good course history"
+rsm classic,pga,28,Greyson Sigg,0.008933553034851834,0.04958561312178112,,11 / 13 / 25,"class (rating), good course history"
+rsm classic,pga,29,Sami Valimaki,0.008817838804779947,0.04356709512570097,,MC / 13 / MC,"class (rating), good course history"
+rsm classic,pga,30,Mackenzie Hughes,0.008787748253481574,0.042053656208588454,,MC / 4 / 25,"class (rating), top 5s in last 5, good course history"
+rsm classic,pga,31,Bud Cauley,0.008545154147581516,0.047713783378664595,,MC / MC / 44,"class (rating), form trending up, good course history"
+rsm classic,pga,32,Christiaan Bezuidenhout,0.008441677045287714,0.043282282805200634,,MC / 19 / 17,class (rating)
+rsm classic,pga,33,Rasmus Neergaard-Petersen,0.008179196559495878,0.04913357688376488,,56 / 48 / 23,class (rating)
+rsm classic,pga,34,Steven Fisk,0.00817491234828964,0.051805802149169446,,42 / 2 / 66,"class (rating), top 5s in last 5"
+rsm classic,pga,35,Davis Thompson,0.008124463835575123,0.05097370333290878,,34 / 54 / 62,"class (rating), form trending up"
+rsm classic,pga,36,Eric Cole,0.008031903758681477,0.057608881464267445,,25 / 65 / 24,"class (rating), good course history, form trending up"
+rsm classic,pga,37,David Ford,0.007939275983988409,0.0427881186628818,,5 / MC / 25,"top 5s in last 5, class (rating), top 5 last start"
+rsm classic,pga,38,Marco Penge,0.007728482293262246,0.043866746346151037,,MC / 40 / 20,class (rating)
+rsm classic,pga,39,Zach Bauchou,0.007323833042618084,0.042858640959396815,,33 / MC / 9,class (rating)
+rsm classic,pga,40,Trace Crowe,0.007300579807544987,0.04311003947545925,,50 / 11 / 34,"class (rating), top 5s in last 5"
+rsm classic,pga,41,Johnny Keefer,0.0071097305980359436,0.03791998742043228,,MC / MC / 33,"class (rating), good course history"
+rsm classic,pga,42,Austin Eckroat,0.007025314715003877,0.04271219602345992,,21 / 54 / 57,"class (rating), good course history"
+rsm classic,pga,43,Emiliano Grillo,0.006860657002073562,0.045435119354965484,,21 / 58 / 52,"class (rating), good course history"
+rsm classic,pga,44,Ben Silverman,0.006858510010494447,0.046283795830900476,,33 / 19 / 3,"class (rating), top 5s in last 5"
+rsm classic,pga,45,Rico Hoey,0.006828988076547929,0.04095851811217978,,21 / MC / 52,"class (rating), good course history"
+rsm classic,pga,46,Sudarshan Yellamaraju,0.006719206271238596,0.04117688702560872,,12 / 34 / 45,class (rating)
+rsm classic,pga,47,Neal Shipley,0.006544156867021677,0.03853140346403452,,74 / 16 / 34,"class (rating), top 5s in last 5"
+rsm classic,pga,48,Max McGreevy,0.006387166740677237,0.039641609769195583,,50 / 29 / 44,"class (rating), good course history"
+rsm classic,pga,49,Pierceson Coody,0.006381741228416326,0.04494025020192977,,33 / 6 / 50,class (rating)
+rsm classic,pga,50,Chad Ramey,0.006371793474426295,0.03869732556533761,,25 / 40 / 59,class (rating)
+rsm classic,pga,51,Mac Meissner,0.006355356993261647,0.03718421526033025,,48 / 23 / MC,"class (rating), good course history"
+rsm classic,pga,52,Billy Horschel,0.006285528924798316,0.03459905978531823,,MC / MC / 21,class (rating)
+rsm classic,pga,53,Ryo Hisatsune,0.005802201520322613,0.03488739696473866,,41 / MC / 12,"class (rating), good course history"
+rsm classic,pga,54,Lee Hodges,0.005664331393358953,0.03216704022253711,,MC / MC / 44,class (rating)
+rsm classic,pga,55,Kevin Yu,0.005465024035703926,0.04287445023782752,,65 / MC / MC,"class (rating), form trending up"
+rsm classic,pga,56,Rasmus Højgaard,0.005371149737261886,0.03048569140160363,,56 / MC / MC,class (rating)
+rsm classic,pga,57,Sam Stevens,0.005362159690624272,0.02698417107272948,,42 / MC / MC,"class (rating), good course history"
+rsm classic,pga,58,Luke Clanton,0.005346531530822129,0.030819042772480532,,33 / 29 / 11,good course history
+rsm classic,pga,59,Andrew Putnam,0.005204146457582001,0.03348495020897409,,42 / MC / 33,class (rating)
+rsm classic,pga,60,Haotong Li,0.005170787058240154,0.03372993657729429,,56 / 29 / MC,class (rating)
+rsm classic,pga,61,Webb Simpson,0.005166319234308011,0.02576773420263518,,24 / 38 / MC,"class (rating), good course history"
+rsm classic,pga,62,Max Greyserman,0.005144954931143105,0.0373881533795207,,42 / 11 / MC,class (rating)
+rsm classic,pga,63,Kevin Roy,0.005093600919062031,0.031914410786284264,,MC / MC / 64,class (rating)
+rsm classic,pga,64,Daniel Berger,0.005054153308434401,0.025952307981483916,,MC / MC / 25,"class (rating), good course history"
+rsm classic,pga,65,Taylor Moore,0.005025323698986063,0.03473913927966405,,MC / 3 / 41,"top 5s in last 5, good course history"
+rsm classic,pga,66,Jackson Suber,0.005011706926796315,0.03619119769531479,,MC / 34 / 41,class (rating)
+rsm classic,pga,67,Patrick Rodgers,0.004893879420402942,0.02994842574469456,,65 / MC / 29,good course history
+rsm classic,pga,68,John Parry,0.004846574358181465,0.03187396679209521,,25 / MC / MC,class (rating)
+rsm classic,pga,69,Zecheng Dou,0.0043044010651989125,0.029423747801762143,,MC / 40 / 34,
+rsm classic,pga,70,Matt Kuchar,0.004177622380024679,0.02469501815929064,,MC / MC / 50,
+rsm classic,pga,71,Erik van Rooyen,0.0041479753170595365,0.02795883144402398,,54 / 6 / 59,class (rating)
+rsm classic,pga,72,Joel Dahmen,0.00412690031269564,0.026209948408076045,,MC / 34 / 44,
+rsm classic,pga,73,Hayden Springer,0.003964183475381521,0.02929759349088077,,63 / 48 / 34,
+rsm classic,pga,74,Adrien Dumont de Chassart,0.0038716182303131603,0.027379856496950756,,25 / 34 / 17,good course history
+rsm classic,pga,75,Matthieu Pavon,0.0038614012088427144,0.030773365203833097,,42 / 11 / MC,top 5s in last 5
+rsm classic,pga,76,Brice Garnett,0.0038182970058587952,0.027423537926839322,,42 / 58 / 17,
+rsm classic,pga,77,Jesper Svensson,0.003792425001469783,0.027243078571945283,,33 / 29 / 25,
+rsm classic,pga,78,Lucas Glover,0.0036570934702486774,0.023801553512257562,,50 / 34 / MC,good course history
+rsm classic,pga,79,A.J. Ewart,0.003651551654834352,0.024552928517167026,,MC / 58 / 25,class (rating)
+rsm classic,pga,80,Kevin Streelman,0.0034843650428000215,0.022651087715689664,,65 / MC / MC,top 5s in last 5
+rsm classic,pga,81,Dylan Wu,0.0033192303161951302,0.0223321098453475,,MC / 61 / 17,
+rsm classic,pga,82,Chandler Phillips,0.003302101786473792,0.02240434083310564,,MC / 23 / MC,good course history
+rsm classic,pga,83,Adam Hadwin,0.0032976010604958395,0.02048043226522027,,40 / 17 / 39,
+rsm classic,pga,84,Patrick Fishburn,0.003261359966862288,0.022116325151793848,,MC / 54 / MC,good course history
+rsm classic,pga,85,Paul Peterson,0.0031882063018684337,0.02691338826612203,,18 / 64 / 59,good course history
+rsm classic,pga,86,Taylor Pendrith,0.0031326051012958954,0.020218263425974645,,MC / MC / MC,good course history
+rsm classic,pga,87,Vince Whaley,0.0030800201284987457,0.020416226301208127,,MC / 23 / 57,
+rsm classic,pga,88,Karl Vilips,0.0029636493601176224,0.022134915853546287,,MC / 23 / 39,
+rsm classic,pga,89,Takumi Kanaya,0.002931478442817279,0.02036101374333428,,MC / MC / 44,
+rsm classic,pga,90,S.Y. Noh,0.002878881071785023,0.019619150969231093,,17 / 48 / MC,good course history
+rsm classic,pga,91,Ben Martin,0.0028631767346148887,0.019933349536095612,,54 / MC / 34,good course history
+rsm classic,pga,92,Adrien Saddier,0.0028357540240841065,0.017531462003599008,,MC / 44 / 62,
+rsm classic,pga,93,Justin Lower,0.0027976416445023907,0.017483744652917473,,MC / 40 / MC,
+rsm classic,pga,94,William Mouw,0.0027778912668962627,0.020037142129005297,,MC / MC / 32,good course history
+rsm classic,pga,95,Kensei Hirata,0.0027238338043307306,0.018419770398365485,,4 / 11 / 34,"top 5s in last 5, top 5 last start"
+rsm classic,pga,96,Tony Finau,0.002598092838679061,0.017685494016012753,,33 / MC / 41,
+rsm classic,pga,97,David Lipsky,0.0025683565761964043,0.01857212000289307,,33 / MC / 54,
+rsm classic,pga,98,Troy Merritt,0.002552367705809806,0.017799003473758738,,MC / 43 / MC,
+rsm classic,pga,99,Rikuya Hoshino,0.0025397567858278145,0.01834495215495424,,21 / MC / 64,
+rsm classic,pga,100,Peter Malnati,0.002513453484575747,0.01485880517166878,,18 / MC / 25,
+rsm classic,pga,101,Adam Svensson,0.002487739390577975,0.019355163049511126,,68 / MC / 59,good course history
+rsm classic,pga,102,Mark Hubbard,0.002462560431440375,0.016638476436695238,,MC / MC / 34,
+rsm classic,pga,103,John VanDerLaan,0.002382581083636929,0.016396839015390612,,42 / MC / MC,
+rsm classic,pga,104,Will Gordon,0.002335929866438509,0.016092222176089358,,56 / MC / MC,good course history
+rsm classic,pga,105,Garrick Higgo,0.0022639245325372817,0.015985813329329843,,MC / 29 / MC,
+rsm classic,pga,106,David Skinns,0.002245079377384863,0.020036648130715814,,56 / 64 / 15,
+rsm classic,pga,107,Stefano Mazzoli,0.0020809554146215842,0.017765591222453747,,46 / MC / 55,
+rsm classic,pga,108,Tyler Duncan,0.0020788181479043867,0.01749041025958368,,71 / 63 / MC,good course history
+rsm classic,pga,109,K.H. Lee,0.0019282104933050586,0.013872343405975276,,64 / MC / MC,
+rsm classic,pga,110,Patton Kizzire,0.001914343134053159,0.014293785017290284,,25 / MC / MC,
+rsm classic,pga,111,Chandler Blanchet,0.0018628951169610511,0.015475746325860174,,72 / 68 / 6,
+rsm classic,pga,112,Jeremy Paul,0.0018510305010127814,0.01623628757759339,,67 / 70 / 67,
+rsm classic,pga,113,Aaron Wise,0.0017517634863617106,0.012554435447621685,,MC / MC / MC,
+rsm classic,pga,114,Luke List,0.0017180312829294976,0.012278088343307443,,MC / 37 / MC,good course history
+rsm classic,pga,115,Francisco Bidé,0.001696751033194303,0.00601490784561604,,MC / MC,
+rsm classic,pga,116,Gordon Sargent,0.00163441874389897,0.013379214276006236,,MC / 34 / 21,
+rsm classic,pga,117,Calen Sanderson,0.001615002707747411,0.005483648410554647,,59,
+rsm classic,pga,118,Hank Lebioda,0.0015841046715743482,0.011951678454085169,,MC / MC / 64,
+rsm classic,pga,119,Emilio Gonzalez,0.0015660356177502623,0.01098534625103897,,MC / 65 / MC,
+rsm classic,pga,120,Cam Davis,0.0015021770404185567,0.012017410875489281,,42 / 40 / 11,
+rsm classic,pga,121,Harry Higgs,0.0014836874276377811,0.01132801330487017,,MC / MC / MC,
+rsm classic,pga,122,Davis Chatfield,0.0014300263087357109,0.011248686966837675,,MC / MC / 52,
+rsm classic,pga,123,Davis Riley,0.001328899416450992,0.010334209309249942,,MC / MC / 52,
+rsm classic,pga,124,Rafael Campos,0.0012973764308756512,0.010318077831861252,,MC / 40 / 44,
+rsm classic,pga,125,Joe Highsmith,0.001270033660366755,0.010877530966116185,,MC / MC / MC,good course history
+rsm classic,pga,126,Adam Schenk,0.0011820779065761097,0.009548163606865388,,MC / MC / 43,
+rsm classic,pga,127,Alejandro Tosti,0.00110301831441735,0.0097465973906697,,25 / MC / MC,
+rsm classic,pga,128,Nick Dunlap,0.0010861566599989594,0.010602507554271608,,42 / MC / 25,
+rsm classic,pga,129,Jeffrey Kang,0.0010805191128956766,0.010088895076341966,,56 / 54 / 59,
+rsm classic,pga,130,Danny Walker,0.0009766790149521214,0.008883567040685582,,MC / MC / 6,
+rsm classic,pga,131,Kevin Kisner,0.0009230974570730566,0.0066859842221284336,,MC / MC / MC,
+rsm classic,pga,132,David Lingmerth,0.0009114010312475046,0.00743941577386555,,MC / MC / MC,good course history
+rsm classic,pga,133,Brendon Todd,0.0008696074565283948,0.00756836558418596,,64 / 68 / MC,
+rsm classic,pga,134,Pontus Nyholm,0.000580460634867888,0.005438564545145013,,MC / MC / MC,
+rsm classic,pga,135,Nicholas Lindheim,0.0005139886815380817,0.005213267069079764,,MC / MC / 74,
+rsm classic,pga,136,Marcelo Rozo,0.0005093344043727649,0.005113855761558857,,68 / 54 / MC,
+rsm classic,pga,137,Jimmy Stanger,0.0004920039781005271,0.004610219547964188,,MC / MC / MC,
+rsm classic,pga,138,Christo Lamprecht,0.00028339951593635146,0.003332375761123233,,75 / MC / MC,
+rsm classic,pga,139,Tyler Collet,0.00027650334761210473,0.003200853306633581,,72 / 54 / MC,

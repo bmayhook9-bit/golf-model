@@ -47,15 +47,17 @@ jobs:
         if: steps.pick.outputs.job == 'shortlist'
         run: |
           python src/weekly/shortlist.py > /dev/null
+          python src/export_dashboard.py
           gh issue create --title "Golf shortlist $(date -u +%Y-%m-%d)" --body-file reports/latest.md
       - name: Grade bets
         if: steps.pick.outputs.job == 'grade'
         run: |
           python src/weekly/grade.py | tee grade.txt
+          python src/export_dashboard.py
           if [ -s grade.txt ]; then gh issue create --title "Golf bets graded $(date -u +%Y-%m-%d)" --body-file grade.txt; fi
       - name: Commit outputs
         run: |
           git config user.name "golf-bot"; git config user.email "golf-bot@users.noreply.github.com"
-          git add raw reports bets 2>/dev/null || true
+          git add raw reports bets data/out 2>/dev/null || true
           git diff --cached --quiet || git commit -m "weekly-golf: ${{ steps.pick.outputs.job }} $(date -u +%Y-%m-%dT%H:%M)"
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

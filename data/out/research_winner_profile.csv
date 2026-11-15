@@ -1,0 +1,13 @@
+pattern,slug,winners_pct,field_pct
+2+ top 5s in last 5,t5_2p_l5,19.1,3.4
+Won in last 3,won_last3,12.1,2.2
+Runner-up last start,runner_up_last,3.9,1.1
+Top 5 last start,t5_last,16.8,4.6
+"Top 5 after 54 holes, last 3",contend_l3,32.6,12.3
+Form well above baseline,form_up,4.5,1.7
+Strong course history,course_good,23.6,13.1
+Played previous week,played_prev_wk,55.1,49.6
+3rd+ week in a row,consec3p,24.0,24.1
+Course debut,course_debut,44.5,51.4
+First start after break,first_after_break,18.2,25.6
+Missed cut last start,mc_last,23.0,43.4

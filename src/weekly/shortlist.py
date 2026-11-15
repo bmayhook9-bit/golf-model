@@ -30,6 +30,7 @@ def history_flags():
     return out
 
 _CACHE = {}
+OUT = {'buildup': [], 'value': [], 'lead': [], 'targets': []}   # structured copies for the dashboard
 def buildup_rank(event_name, players, tour):
     """Run the build-up model for an upcoming field. Returns DataFrame player, p_win, p_t5, why."""
     import features as FT, buildup_model as BM
@@ -69,6 +70,11 @@ def buildup_lines(ev, players, tour, backs, flags, n=15):
         return [f"_Build-up ranking unavailable: {e}_", ""]
     out = [f"**Who's set up - build-up ranking: {ev}** (rating, form, schedule, course history. Ranks well, but does NOT beat the market on its own: compare its price with what's on offer)", "",
            "| # | Player | Model win % | Model price | Top 5 % | Betfair back | Last 3 | Why |", "|---|---|---|---|---|---|---|---|"]
+    allB = buildup_rank(ev, players, tour)
+    for i, r in enumerate(allB.itertuples(), 1):
+        b = backs.get(r.shown)
+        OUT['buildup'].append(dict(event=ev, tour=tour, rank=i, player=r.shown, model_win=r.p_win, model_top5=r.p_t5,
+                                   betfair_back=b if b and b == b else None, last3=flags.get(norm(r.shown), {}).get('last3', ''), why=r.why))
     for i, r in enumerate(B.itertuples(), 1):
         b = backs.get(r.shown)
         out.append(f"| {i} | {r.shown} | {r.p_win:.1%} | {1 / r.p_win:.1f} | {r.p_t5:.0%} | {b if b and b == b else '-'} | {flags.get(norm(r.shown), {}).get('last3', '')} | {r.why} |")
@@ -113,12 +119,15 @@ def main(isn_fn=None, price_fn=None):
                       "| Player | Back | ISN fair | Edge | Stake to win £500 | Last 3 | Flags |", "|---|---|---|---|---|---|---|"]
             for r in v.itertuples():
                 fl = ', '.join(k for k in ('won_last3', 'contend_l3', 't5_last') if getattr(r, k))
+                OUT['value'].append(dict(event=ev, player=r.runner, back=r.back, isn_fair=r.isn_price, edge=r.edge,
+                                         stake_to_win_500=stake_for('WINNER', r.back), last3=r.last3, flags=fl))
                 lines.append(f"| {r.runner} | {r.back} | {r.isn_price:.1f} | {r.edge:+.0%} | £{stake_for('WINNER', r.back)} | {r.last3} | {fl} |")
             if v.empty: lines.append("| none | | | | | | |")
             lines.append("")
         # 2. the tracked lead (PGA, < 20.0, won in last 3)
         if is_pga:
             ld = g[(g.back < LEAD_MAX_PRICE) & g.won_last3]
+            OUT['lead'] += [dict(event=ev, player=r.runner, back=r.back, last3=r.last3) for r in ld.itertuples()]
             lines += ["**Tracked lead** (PGA, back < 20.0, won in last 3 starts: 22 wins v 14.3 expected, 2023-26)", ""]
             lines += [f"- {r.runner} @ {r.back} (last 3: {r.last3})" for r in ld.itertuples()] or ["- none this week"]
             lines.append("")
@@ -146,6 +155,9 @@ def main(isn_fn=None, price_fn=None):
             f = flags.get(norm(r.Player), {})
             b = bf.get(r.Player)
             lead = 'yes' if f.get('won_last3') and (b or r.isn_price) < LEAD_MAX_PRICE else ''
+            OUT['targets'].append(dict(isn_file=os.path.basename(isn_fn), isn_rank=int(r._4), player=r.Player, isn_fair=r.isn_price,
+                                       target=r.isn_price * (1 + EDGE_MIN), betfair_back=b if b and b == b else None,
+                                       last3=f.get('last3', ''), lead=lead))
             lines.append(f"| {int(r._4)} | {r.Player} | {r.isn_price:.1f} | {r.isn_price * (1 + EDGE_MIN):.1f} | {b if b and b == b else '-'} | {f.get('last3', '')} | {lead} |")
         lines.append("")
     if os.path.exists('data/case_studies.csv'):
@@ -159,6 +171,12 @@ def main(isn_fn=None, price_fn=None):
             lines += ["", "Full season: `reports/winner_case_studies.md`", ""]
     lines += ["---", "Log any bet you place in `bets/log.csv` (date, event, player, market, price, stake, book). Closing prices and results fill in automatically."]
     md = '\n'.join(lines)
+    os.makedirs('data/out', exist_ok=True)
+    for k, rows in OUT.items():
+        pd.DataFrame(rows).to_csv(f'data/out/{k}.csv', index=False)
+    json.dump(dict(generated=dt.datetime.now(dt.timezone.utc).isoformat(), prices_file=os.path.basename(price_fn) if price_fn else None,
+                   prices_age_h=round(float(age_h), 1) if price_fn else None, isn_file=os.path.basename(isn_fn) if isn_fn else None,
+                   edge_min=EDGE_MIN, lead_max_price=LEAD_MAX_PRICE), open('data/out/meta.json', 'w'), indent=1)
     os.makedirs('reports', exist_ok=True)
     fn = f"reports/shortlist_{dt.date.today().isoformat()}.md"
     open(fn, 'w').write(md); open('reports/latest.md', 'w').write(md)

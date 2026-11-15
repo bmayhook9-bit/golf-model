@@ -252,7 +252,38 @@ const fmtO = o => o == null ? '–' : (o >= 100 ? o.toFixed(0) : o.toFixed(1));
 const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const store = { get(k, d) { try { const v = localStorage.getItem('gbd.' + k); return v ? JSON.parse(v) : d; } catch { return d; } },
-                set(k, v) { try { localStorage.setItem('gbd.' + k, JSON.stringify(v)); } catch {} } };
+                set(k, v) { try { localStorage.setItem('gbd.' + k, JSON.stringify(v)); } catch {} scheduleSync(); } };
+// ---- cross-device state + placed bets (artifact database; falls back to this browser only) ----
+let DB = null, syncT = null;
+function scheduleSync() { if (!DB) return; clearTimeout(syncT); syncT = setTimeout(async () => {
+  try { await DB.doc('state/main').set({ card: S.card, prices: S.prices, fancies: S.fancies, tiers: S.tiers, ew: S.ew, saved: new Date().toISOString() }); setSyncPill('synced'); }
+  catch (e) { setSyncPill('error'); } }, 800); }
+function setSyncPill(st) { const el = $('#syncPill'); if (!el) return;
+  el.className = 'pill ' + (st === 'synced' ? 'good' : st === 'error' ? 'bad' : st === 'local' ? '' : 'warn');
+  el.textContent = st === 'synced' ? 'Saved across devices' : st === 'error' ? 'Not saved: retry' : st === 'local' ? 'Saved in this browser only' : 'Connecting…'; }
+async function initDB() {
+  let db = null; try { db = await (window.claude && window.claude.use ? window.claude.use('db') : null); } catch { db = null; }
+  if (!db) { setSyncPill('local'); return; }
+  const timer = setTimeout(() => setSyncPill('local'), 10000);
+  try {
+    const snap = await db.doc('state/main').get(); clearTimeout(timer); DB = db;
+    const v = snap && (snap.data ? snap.data() : snap);
+    if (v && v.saved) { ['card', 'prices', 'fancies', 'tiers', 'ew'].forEach(k => { if (v[k] != null) S[k] = v[k]; }); renderAll(); }
+    setSyncPill('synced'); loadPlaced();
+  } catch (e) { clearTimeout(timer); setSyncPill('local'); }
+}
+let PLACED = [];
+async function loadPlaced() { if (!DB) return; try { const q = await DB.collection('bets').get(); PLACED = (q.docs || q || []).map(d => ({ id: d.id, ...(d.data ? d.data() : d) })); } catch { PLACED = []; } if (location.hash === '#tracker') renderTracker(); }
+async function markPlaced(ids) {
+  if (!DB) { toast('Placing needs the saved version of the desk: use "Copy for bet log" instead'); return; }
+  const d = new Date().toISOString().slice(0, 10);
+  for (const b of S.card.filter(x => ids.includes(x.id))) {
+    const row = { date: d, event: b.ev, player: b.p, market: b.m === 'ew' ? `ew ${b.f === 0.25 ? '1/4' : '1/5'} ${b.places}` : b.m, price: b.price, stake: +b.stake,
+                  book: b.book || '', notes: b.m === 'h2h' ? `vs ${b.opp}` : 'desk', edge: Math.round(1000 * betEdge(b)) / 1000, placed_at: new Date().toISOString(), synced: false };
+    try { await DB.collection('bets').doc(String(b.id)).set(row); PLACED.push({ id: String(b.id), ...row }); } catch (e) { toast('Could not save a bet: try again'); return; }
+  }
+  S.card = S.card.filter(x => !ids.includes(x.id)); store.set('card', S.card); renderCard(); renderBoard(); toast(`${ids.length} bet${ids.length > 1 ? 's' : ''} marked as placed: they'll be added to your bet log automatically`);
+}
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
 async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg); } catch { showText(text); } }
 function showText(text) { $('#dlgBody').innerHTML = `<div class="dlghead"><h2>Copy this</h2><button onclick="dlg.close()">Close</button></div><textarea style="width:100%;height:260px;font:13px var(--mono)" readonly>${esc(text)}</textarea>`; dlg.showModal(); }
@@ -296,6 +327,7 @@ function renderStatus() {
   if (age != null) st.push(`<span class="pill ${age > 12 ? 'warn' : 'good'}">Betfair prices ${age > 0 ? age.toFixed(0) : 0}h old</span>`);
   if (m.isn_file) st.push(`<span class="pill acc">ISN: ${esc(m.isn_file.replace('.csv', '').split('_').slice(1).join(' ').replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()).replace('Rsm', 'RSM'))}</span>`);
   st.push(`<span class="pill">Value margin +${(MARGIN * 100).toFixed(0)}%</span>`);
+  st.push(`<span class="pill warn" id="syncPill">Connecting…</span>`);
   $('#status').innerHTML = st.join('');
   $('#wkLabel').textContent = D.events.length ? D.events.map(e => e.name.replace(/^PGA |^DPW Tour /, '')).join(' · ') : '';
 }
@@ -427,7 +459,7 @@ function cardHtml() {
     ${S.card.length ? Object.entries(byEv).map(([e, bs]) => `<div class="note" style="margin:8px 0 6px;font-weight:600">${esc(e)}</div>` + bs.map(b => {
       const edge = betEdge(b);
       return `<div class="betrow"><div><b>${esc(b.p)}</b> <span class="pill ${edge >= MARGIN ? 'good' : edge > 0 ? 'warn' : 'bad'}">${edge >= 0 ? '+' : ''}${(edge * 100).toFixed(0)}%</span></div>
-        <div><button class="sm ghost" data-del="${b.id}" aria-label="Remove ${esc(b.p)}">Remove</button></div>
+        <div class="row" style="gap:4px"><button class="sm" data-placed="${b.id}" title="I've placed this bet">Placed</button><button class="sm ghost" data-del="${b.id}" aria-label="Remove ${esc(b.p)}">Remove</button></div>
         <div class="m">${esc(betLabel(b))} @ <span class="mono">${fmtO(b.price)}</span> · fair ${fmtO(b.fair)} (${b.src})</div>
         <div class="row" style="justify-content:end;gap:6px"><span class="m">£</span><input data-stake="${b.id}" value="${b.stake}" inputmode="decimal" aria-label="Stake"></div>
  <div class="m">${b.m === 'ew' ? `Win returns £${(((+b.stake || 0) / 2) * b.price + ((+b.stake || 0) / 2) * (1 + (b.price - 1) * b.f)).toFixed(2)}` : `Returns £${((+b.stake || 0) * b.price).toFixed(2)}`} · <input data-book="${b.id}" value="${esc(b.book)}" placeholder="Bookmaker" style="width:110px;padding:2px 6px;font-size:12px" aria-label="Bookmaker"></div></div>`; }).join('')).join('')
@@ -435,16 +467,18 @@ function cardHtml() {
     <div class="totals"><span>Total stake</span><span class="v">£${tot.stake.toFixed(2)}</span>
       <span>Expected profit (fair prices)</span><span class="v" style="color:${tot.ev >= 0 ? 'var(--good)' : 'var(--bad)'}">${tot.ev >= 0 ? '+' : '−'}£${Math.abs(tot.ev).toFixed(2)}</span>
       <span>Biggest single return</span><span class="v">£${Math.max(0, ...S.card.map(b => (+b.stake || 0) * b.price)).toFixed(2)}</span></div>
-    <div class="row"><button class="primary" id="cpLog" ${S.card.length ? '' : 'disabled'}>Copy for bet log</button><button id="cpTxt" ${S.card.length ? '' : 'disabled'}>Copy card as text</button><button class="ghost" id="clr" ${S.card.length ? '' : 'disabled'}>Clear</button></div>
+    <div class="row"><button class="primary" id="placeAll" ${S.card.length ? '' : 'disabled'}>Mark all as placed</button><button id="cpLog" ${S.card.length ? '' : 'disabled'}>Copy for bet log</button><button id="cpTxt" ${S.card.length ? '' : 'disabled'}>Copy card as text</button><button class="ghost" id="clr" ${S.card.length ? '' : 'disabled'}>Clear</button></div>
     <details style="margin-top:12px"><summary class="note" style="cursor:pointer">Staking tiers (target profit per bet)</summary>
       <div class="row" style="margin-top:8px">${['win', 't5', 't10', 't20', 'h2h'].map(m => `<label class="note">${m === 'win' ? 'Win / each way' : MK[m].lab} £<input data-tier="${m}" value="${S.tiers[m]}" style="width:64px" inputmode="decimal"></label>`).join('')}</div></details>
-    <p class="note" style="margin-top:10px">"Copy for bet log" gives lines to paste into <span class="mono">bets/log.csv</span> on GitHub; results, closing prices and CLV fill in on Monday.</p></div>`;
+    <p class="note" style="margin-top:10px">Press "Placed" once a bet is on: it goes into your bet log automatically (synced Monday morning, before grading). Results, closing prices and CLV fill in on Monday.</p></div>`;
 }
 function renderCard() {
   const html = cardHtml();
   $('#cardPane').innerHTML = html; $('#cardFull').innerHTML = html;
   $('#navCount').textContent = S.card.length ? `(${S.card.length})` : '';
   $('#fab').textContent = `Card (${S.card.length})`;
+  $$('[data-placed]').forEach(b => b.onclick = () => markPlaced([+b.dataset.placed]));
+  $$('#placeAll').forEach(b => b.onclick = () => markPlaced(S.card.map(x => x.id)));
   $$('[data-del]').forEach(b => b.onclick = () => { S.card = S.card.filter(x => x.id != b.dataset.del); store.set('card', S.card); renderCard(); renderBoard(); });
   $$('[data-stake]').forEach(i => i.onchange = () => { const b = S.card.find(x => x.id == i.dataset.stake); b.stake = parseFloat(i.value) || 0; store.set('card', S.card); renderCard(); });
   $$('[data-book]').forEach(i => i.onchange = () => { const b = S.card.find(x => x.id == i.dataset.book); b.book = i.value; store.set('card', S.card); });
@@ -482,8 +516,8 @@ function drawPlayerCharts(scope) {
 }
 function openPlayer(k) {
   const p = D.players[k]; const r = ev() && ev().players.find(x => x.k === k);
-  $('#dlgBody').innerHTML = `<div class="dlghead"><div><h2>${esc(p ? p.n : k)}</h2>${r ? `<p class="note">${esc(ev().name)} · model ${fmtP(r.mw)} to win · ${r.isn ? 'ISN fair ' + fmtO(r.isn) : ''} · ${esc(r.why)}</p>` : ''}</div><button onclick="dlg.close()">Close</button></div>` + playerBlock(k);
-  dlg.showModal(); drawPlayerCharts($('#dlgBody'));
+  $('#dlgBody').innerHTML = `<div class="dlghead"><div><h2>${esc(p ? p.n : k)}</h2>${r ? `<p class="note">${esc(ev().name)} · model ${fmtP(r.mw)} to win · ${r.isn ? 'ISN fair ' + fmtO(r.isn) : ''} · ${esc(r.why)}</p>` : ''}</div><button onclick="dlg.close()">Close</button></div>` + (r ? askBox(k) : '') + playerBlock(k);
+  dlg.showModal(); drawPlayerCharts($('#dlgBody')); wireAsk($('#dlgBody'));
 }
 function renderPlayers() {
   const names = Object.entries(D.players).map(([k, p]) => p.n).sort();
@@ -567,6 +601,7 @@ const keyOf = n => n.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().rep
 
 // ---------- tracker ----------
 function renderTracker() {
+  const pending = PLACED.filter(x => !x.synced);
   const b = D.bets || [];
   const settled = b.filter(x => x.return != null && x.return !== '');
   const st = settled.reduce((a, x) => a + (+x.stake || 0), 0), pl = settled.reduce((a, x) => a + (+x.return || 0), 0);
@@ -575,7 +610,10 @@ function renderTracker() {
     <div class="tile"><span class="lab">Bets logged</span><span class="big num">${b.length}</span><span class="sub">${settled.length} settled</span></div>
     <div class="tile"><span class="lab">Profit / loss</span><span class="big num" style="color:${pl >= 0 ? 'var(--good)' : 'var(--bad)'}">${pl >= 0 ? '+' : '−'}£${Math.abs(pl).toFixed(2)}</span><span class="sub">${st ? ((pl / st) * 100).toFixed(1) + '% return on £' + st.toFixed(2) : 'nothing settled yet'}</span></div>
     <div class="tile"><span class="lab">Average CLV</span><span class="big num">${clv.length ? ((clv.reduce((a, x) => a + x, 0) / clv.length) * 100).toFixed(1) + '%' : '–'}</span><span class="sub">your price vs Betfair close · the early signal of an edge</span></div>
+    <div class="tile"><span class="lab">Placed, waiting to log</span><span class="big num">${pending.length}</span><span class="sub">${pending.length ? 'added to bets/log.csv on the next sync' : 'nothing waiting'}</span></div>
     <div class="tile"><span class="lab">Beat the close</span><span class="big num">${clv.length ? Math.round(100 * clv.filter(x => x > 0).length / clv.length) + '%' : '–'}</span><span class="sub">of bets with a closing price</span></div></div>
+    ${pending.length ? `<div class="panel" style="margin-bottom:16px"><h3>Placed this week</h3><div class="tablewrap" style="margin-top:8px"><table><thead><tr><th>Date</th><th>Event</th><th>Player</th><th>Market</th><th>Price</th><th>Stake</th><th>Book</th><th>Edge at the time</th></tr></thead><tbody>
+      ${pending.map(x => `<tr><td class="mono">${esc(x.date)}</td><td>${esc(x.event)}</td><td>${esc(x.player)}</td><td>${esc(x.market)}</td><td class="n">${x.price}</td><td class="n">£${x.stake}</td><td>${esc(x.book)}</td><td class="n">${x.edge != null ? (x.edge >= 0 ? '+' : '') + Math.round(x.edge * 100) + '%' : ''}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
     ${b.length ? `<div class="grid2"><div class="panel"><h3>Cumulative P/L</h3><div class="chartbox sm"><canvas id="plc"></canvas></div></div><div class="panel"><h3>CLV by bet</h3><div class="chartbox sm"><canvas id="clvc"></canvas></div></div></div>
       <div class="tablewrap" style="margin-top:16px"><table><thead><tr><th>Date</th><th>Event</th><th>Player</th><th>Market</th><th>Price</th><th>Stake</th><th>Result</th><th>Return</th><th>Close</th><th>CLV</th></tr></thead><tbody>
       ${b.slice().reverse().map(x => `<tr><td class="mono">${esc(x.date)}</td><td>${esc(x.event)}</td><td>${esc(x.player)}</td><td>${esc(x.market)}</td><td class="n">${x.price}</td><td class="n">£${x.stake}</td><td>${esc(x.result_pos ?? '')}</td><td class="n">${x.return ?? ''}</td><td class="n">${x.close_price ?? ''}</td><td class="n">${x.clv != null && x.clv !== '' ? (x.clv * 100).toFixed(0) + '%' : ''}</td></tr>`).join('')}</tbody></table></div>`
@@ -584,6 +622,37 @@ function renderTracker() {
   if (clv.length) { const xs = b.filter(x => x.clv != null && x.clv !== ''); new Chart($('#clvc'), { type: 'bar', data: { labels: xs.map(x => x.player), datasets: [{ data: xs.map(x => x.clv * 100), backgroundColor: xs.map(x => x.clv > 0 ? css('--good') : css('--bad')) }] }, options: { maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: css('--muted'), callback: v => v + '%' }, grid: { color: css('--line') } }, x: { ticks: { color: css('--muted') }, grid: { display: false } } } } }); }
 }
 
+
+// ---------- ask Claude ----------
+function playerContext(k) {
+  const e = ev(), r = e && e.players.find(x => x.k === k), p = D.players[k] || {};
+  const sk = r && r.sk ? Object.fromEntries((D.isn_cols || []).map((c, i) => [c, r.sk[i]])) : null;
+  return JSON.stringify({ event: e && e.name, course: e && e.course, course_profile: e && D.courses[e.course] ? { slope: D.courses[e.course].slope, tour_median_slope: D.courses[e.course].med, scoring_by_round: D.courses[e.course].rounds, recent_winners: D.courses[e.course].winners.slice(0, 5) } : null,
+    player: p.n, rating_strokes_per_round_vs_avg_field: p.r, last_starts_oldest_first: (p.s || []).slice(-12).map(s => ({ date: s[0], event: s[2], course: s[3], finish: s[4] })),
+    finishes_at_this_course: p.c && e && p.c[e.course], isn: r ? { rank: r.isnr, of: D.isn_n, fair_win_price: r.isn, skill_ranks_lower_is_better: sk } : null,
+    model: r ? { rank: r.rank, of: e.players.length, win: r.mw, top5: r.m5, top10: r.m10, top20: r.m20, why: r.why } : null,
+    betfair_back: r && r.bf, value_margin: MARGIN });
+}
+function askBox(k) { return `<div class="panel" style="margin-top:12px;padding:12px" data-ask="${k}"><h3>Ask Claude about this player</h3>
+  <div class="row" style="margin-top:8px"><input data-askq style="flex:1;min-width:220px" placeholder="e.g. Is he a good each-way bet here? What worries you?" aria-label="Question"><button class="primary sm" data-askgo>Ask</button></div>
+  <div class="note" data-askout style="margin-top:8px;white-space:pre-wrap"></div></div>`; }
+function wireAsk(scope) {
+  scope.querySelectorAll('[data-ask]').forEach(box => { const go = box.querySelector('[data-askgo]'), q = box.querySelector('[data-askq]'), out = box.querySelector('[data-askout]');
+    const run = async () => { let sample = null; try { sample = await window.claude.use('sample'); } catch {}
+      if (!sample) { out.textContent = 'Ask Claude is not available in this view.'; return; }
+      const question = q.value.trim() || 'Give me the betting case for and against this player this week, and the best market and minimum price.';
+      out.textContent = 'Thinking…'; go.disabled = true;
+      try {
+        await sample(`You are a sharp, sceptical golf betting analyst helping a UK bettor. Use ONLY the data below. Be concise: at most 6 short bullet points, then one line starting "Verdict:" naming the best market and the minimum decimal price worth taking (fair price + the value margin), or "pass". Treat course history and form as weak signals unless the sample is large; say so when it matters. Prices are decimal odds.
+
+DATA:
+${playerContext(box.dataset.ask)}
+
+QUESTION: ${question}`, { modelTier: 'default', onText: ({ text }) => { out.textContent = text; } });
+      } catch (e) { out.textContent = e && e.code === 'rate_limited' ? 'Too many questions just now: try again in a minute.' : e && e.code === 'not_granted' ? 'Ask Claude needs your permission: try again and allow it.' : 'Could not get an answer: try again.'; }
+      go.disabled = false; };
+    go.onclick = run; q.onkeydown = ev => { if (ev.key === 'Enter') run(); }; });
+}
 
 // ---------- fancies ----------
 const ord = n => { n = Math.round(n); const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
@@ -640,11 +709,13 @@ function renderFancies() {
       <div class="grid2" style="gap:10px;grid-template-columns:1fr 1fr">
         <div><div class="note" style="font-weight:600;color:var(--good)">In his favour</div>${nt.good.length ? nt.good.map(x => `<div class="note">+ ${esc(x)}</div>`).join('') : '<div class="note">Nothing stands out</div>'}</div>
         <div><div class="note" style="font-weight:600;color:var(--bad)">Red flags</div>${nt.bad.length ? nt.bad.map(x => `<div class="note">− ${esc(x)}</div>`).join('') : '<div class="note">None</div>'}</div></div>
+      ${askBox(r.k)}
     </div>`; }).join('') || '<div class="empty">Add the players you fancy to check them.</div>';
   $$('#fgrid [data-frm]').forEach(b => b.onclick = () => { S.fancies = S.fancies.filter(n => n.toLowerCase() !== b.dataset.frm.toLowerCase()); store.set('fancies', S.fancies); renderFancies(); });
   $$('#fgrid input[data-fp]').forEach(inp => inp.onchange = () => { const v = parseFloat(inp.value); const k = pkey(e.name, inp.dataset.fp, inp.dataset.m); if (v > 1) S.prices[k] = v; else delete S.prices[k]; store.set('prices', S.prices); renderFancies(); renderBoard(); });
   $$('#fgrid [data-fadd]').forEach(b => b.onclick = () => addBet(b.dataset.fadd, b.dataset.m));
   $$('#fgrid .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
+  wireAsk($('#fgrid'));
 }
 function addFancy() { const n = $('#fq').value.trim(); if (!n) return; if (!S.fancies.some(x => x.toLowerCase() === n.toLowerCase())) S.fancies.push(n); store.set('fancies', S.fancies); $('#fq').value = ''; renderFancies(); }
 
@@ -693,7 +764,7 @@ function route() {
   if (v === 'courses') renderCourses();
   if (v === 'trends' && !rendered.trends) { renderTrends(); rendered.trends = 1; }
   if (v === 'winners' && !rendered.winners) { renderWinners(); rendered.winners = 1; }
-  if (v === 'tracker' && !rendered.tracker) { renderTracker(); rendered.tracker = 1; }
+  if (v === 'tracker') renderTracker();
 }
 function renderWeek() { renderEvChips(); renderBoard(); renderScatter(); if (ev()) renderCoursePanel(); }
 $('#q').oninput = e => { S.q = e.target.value; renderBoard(); };
@@ -706,7 +777,8 @@ $('#ha').onchange = renderH2H; $('#hb').onchange = renderH2H;
 $('#ewF').value = String(S.ew.f); $('#ewP').value = String(S.ew.p);
 $('#onlyVal').onchange = e => { S.onlyVal = e.target.checked; renderBoard(); };
 Chart.defaults.font.family = "'IBM Plex Sans', system-ui, sans-serif";
-renderStatus(); renderWeek(); renderCard(); route();
+function renderAll() { renderWeek(); renderCard(); route(); }
+renderStatus(); renderWeek(); renderCard(); route(); initDB();
 window.addEventListener('hashchange', route);
 </script>
 </body>

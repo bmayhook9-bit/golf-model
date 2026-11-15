@@ -41,6 +41,8 @@ jobs:
           YEARS=$(date -u +%Y) python src/espn_fetch.py raw/espn pga eur
           python src/espn_meta.py raw/meta
           python src/espn_parse.py
+          python src/features.py && python src/ratings.py
+          python src/case_studies.py $(date -u +%Y) 60
       - name: Shortlist
         if: steps.pick.outputs.job == 'shortlist'
         run: |

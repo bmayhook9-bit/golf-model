@@ -148,6 +148,15 @@ def main(isn_fn=None, price_fn=None):
             lead = 'yes' if f.get('won_last3') and (b or r.isn_price) < LEAD_MAX_PRICE else ''
             lines.append(f"| {int(r._4)} | {r.Player} | {r.isn_price:.1f} | {r.isn_price * (1 + EDGE_MIN):.1f} | {b if b and b == b else '-'} | {f.get('last3', '')} | {lead} |")
         lines.append("")
+    if os.path.exists('data/case_studies.csv'):
+        C = pd.read_csv('data/case_studies.csv', parse_dates=['start'])
+        C = C[C.start >= pd.Timestamp.now() - pd.Timedelta(days=12)]
+        if len(C):
+            lines += ["## Last week's winners: how they arrived", "",
+                      "| Event | Winner | Betfair close | Market rank | Model rank | Last 5 | Build-up |", "|---|---|---|---|---|---|---|"]
+            f = lambda v: '-' if pd.isna(v) else str(int(v))
+            lines += [f"| {r.name} | {r.player} | {'-' if pd.isna(r.bf_win) else r.bf_win} | {f(r.mkt_rank)} | {f(r.model_rank)} | {r.last5} | {r.build_up} |" for r in C.itertuples()]
+            lines += ["", "Full season: `reports/winner_case_studies.md`", ""]
     lines += ["---", "Log any bet you place in `bets/log.csv` (date, event, player, market, price, stake, book). Closing prices and results fill in automatically."]
     md = '\n'.join(lines)
     os.makedirs('reports', exist_ok=True)

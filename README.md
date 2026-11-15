@@ -17,6 +17,9 @@ measured against Betfair prices, plus a weekly value shortlist.
 
 - [x] Build-up model (`src/buildup_model.py`, `models/buildup.json`): field-strength-adjusted rating + form + course. Ranks well (winner in top 10 31%) but below Betfair close on 2026 holdout; shown as 'who's set up', not a betting signal
 
+- [x] Comparable-course fit from results (`src/course_fit.py`): no predictive value (corr 0.05), no price edge - dropped
+- [x] Winner case studies (`src/case_studies.py` -> `reports/winner_case_studies.md`), refreshed weekly; last week's winners shown in the shortlist
+
 ## Weekly routine
 - **You:** drop the week's ISN CSV into `inbox/isn/` (GitHub web: Add file > Upload files) before Mon 12:00 UK (or Tue 12:00 at the latest).
 - **Mon 11:30, Tue 11:30, Wed 17:00, 22:00, Thu 05:00, 10:00 UTC (your Mac):** Betfair price snapshots (`betfair-prices` workflow, self-hosted runner - Betfair blocks GitHub's US servers). The last one before each event's start is its closing price.

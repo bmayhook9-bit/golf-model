@@ -1,0 +1,70 @@
+name: weekly-golf
+
+on:
+  schedule:
+    - cron: '0 17 * * 3'    # Wed 17:00 UTC  - refresh results, prices, shortlist
+    - cron: '0 22 * * 3'    # Wed 22:00 UTC  - price snapshot (closing, Asia/Middle East starts)
+    - cron: '0 5 * * 4'     # Thu 05:00 UTC  - price snapshot (closing, Europe)
+    - cron: '0 10 * * 4'    # Thu 10:00 UTC  - price snapshot (closing, US)
+    - cron: '0 8 * * 1'     # Mon 08:00 UTC  - refresh results, grade bets
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'shortlist | snapshot | grade'
+        default: 'shortlist'
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency: weekly-golf
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      BF_USERNAME: ${{ secrets.BF_USERNAME }}
+      BF_PASSWORD: ${{ secrets.BF_PASSWORD }}
+      BF_APP_KEY: ${{ secrets.BF_APP_KEY }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -r requirements.txt
+      - name: Pick job
+        id: pick
+        run: |
+          J="${{ github.event.inputs.job }}"
+          case "${{ github.event.schedule }}" in
+            '0 17 * * 3') J=shortlist ;;
+            '0 8 * * 1')  J=grade ;;
+            '') ;;
+            *) J=snapshot ;;
+          esac
+          echo "job=${J:-shortlist}" >> "$GITHUB_OUTPUT"
+      - name: Refresh results
+        if: steps.pick.outputs.job != 'snapshot'
+        run: |
+          YEARS=$(date -u +%Y) python src/espn_fetch.py raw/espn pga eur
+          python src/espn_meta.py raw/meta
+          python src/espn_parse.py
+      - name: Betfair price snapshot
+        if: steps.pick.outputs.job != 'grade'
+        run: python src/weekly/betfair_live.py
+      - name: Shortlist
+        if: steps.pick.outputs.job == 'shortlist'
+        run: |
+          python src/weekly/shortlist.py > /dev/null
+          gh issue create --title "Golf shortlist $(date -u +%Y-%m-%d)" --body-file reports/latest.md
+      - name: Grade bets
+        if: steps.pick.outputs.job == 'grade'
+        run: |
+          python src/weekly/grade.py | tee grade.txt
+          if [ -s grade.txt ]; then gh issue create --title "Golf bets graded $(date -u +%Y-%m-%d)" --body-file grade.txt; fi
+      - name: Commit outputs
+        run: |
+          git config user.name "golf-bot"; git config user.email "golf-bot@users.noreply.github.com"
+          git add raw data/live reports bets 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "weekly-golf: ${{ steps.pick.outputs.job }} $(date -u +%Y-%m-%dT%H:%M)"
+          git push

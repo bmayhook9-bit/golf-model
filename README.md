@@ -13,7 +13,16 @@ measured against Betfair prices, plus a weekly value shortlist.
 - [x] Simple player ratings (`src/ratings.py`) and course profiles incl. slope (`src/course_profile.py`)
 - [x] Segment tests (`src/segment_test.py`): lead = in-form PGA favourites (<20.0) underpriced
 - [ ] Winner-profile report
-- [ ] Weekly pipeline (GitHub Actions)
+- [x] Weekly pipeline (GitHub Actions) - built, dry-run tested; live Betfair calls untested until key is added
+
+## Weekly routine
+- **You:** drop the week's ISN CSV into `inbox/isn/` (GitHub web: Add file > Upload files) before Wed 17:00 UK.
+- **Wed 17:00 UTC:** results refreshed, Betfair prices snapshot, shortlist posted as a GitHub issue (notification on your phone) and saved to `reports/latest.md`.
+- **Wed 22:00 / Thu 05:00 / Thu 10:00 UTC:** extra price snapshots, so the last one before each event's start is its closing price.
+- **You:** log any bet in `bets/log.csv` (date, event, player, market = win/top5/top10/top20, price, stake, book).
+- **Mon 08:00 UTC:** results refreshed, bets graded (result, P/L, closing price, CLV), summary posted as an issue.
+
+Secrets needed (Settings > Secrets and variables > Actions): `BF_USERNAME`, `BF_PASSWORD`, `BF_APP_KEY` (Betfair delayed app key).
 
 ## Layout
 - `src/betfair_extract.py` - Betfair BASIC files -> `data/betfair_prices.csv`

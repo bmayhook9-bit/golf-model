@@ -15,7 +15,11 @@ def main(out, tours, years):
             cal = (get(BASE.format(t=t) + f"?dates={y}") or {}).get('leagues', [{}])[0].get('calendar', [])
             for e in cal:
                 fn = os.path.join(out, f"{t}_{y}_{e['id']}.json.gz")
-                if os.path.exists(fn): continue
+                if os.path.exists(fn):
+                    try:
+                        st = json.load(gzip.open(fn, 'rt'))['competitions'][0]['status']['type']['name']
+                    except Exception: st = None
+                    if st == 'STATUS_FINAL': continue
                 s, en = e['startDate'][:10].replace('-', ''), e['endDate'][:10].replace('-', '')
                 d = get(BASE.format(t=t) + f"?dates={s}-{en}")
                 if not d: print('fail', t, e['id']); continue
@@ -25,4 +29,5 @@ def main(out, tours, years):
                 time.sleep(0.3)
             print(t, y, len(cal), flush=True)
 if __name__ == '__main__':
-    main(sys.argv[1], sys.argv[2:] or ['pga', 'eur'], range(2019, 2027))
+    yrs = [int(y) for y in os.environ.get('YEARS', '').split(',') if y] or range(2019, 2027)
+    main(sys.argv[1], sys.argv[2:] or ['pga', 'eur'], yrs)

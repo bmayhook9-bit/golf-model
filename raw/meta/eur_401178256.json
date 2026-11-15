@@ -1,0 +1,1 @@
+{"id": "401178256", "name": "Open de France", "date": "2020-07-02T04:00Z", "endDate": "2020-07-05T04:00Z", "courses": [], "purse": null, "isSignature": false, "primary": false, "playoffType": {"id": -1, "description": "None", "minimumHoles": 0}, "tournament": {"$ref": "http://sports.core.api.espn.com/v2/sports/golf/leagues/eur/tournaments/401178256/seasons/2020?lang=en"}}

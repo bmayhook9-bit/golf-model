@@ -1,0 +1,1 @@
+{"id": "401811927", "name": "The Sentry", "date": "2026-01-08T05:00Z", "endDate": "2026-01-11T05:00Z", "courses": [], "purse": null, "isSignature": true, "primary": true, "playoffType": {"id": -1, "description": "None", "minimumHoles": 0}, "tournament": {"$ref": "http://sports.core.api.espn.com/v2/sports/golf/leagues/pga/tournaments/3354/seasons/2026?lang=en"}}

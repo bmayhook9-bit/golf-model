@@ -2,6 +2,7 @@ name: betfair-prices
 # Runs on Ben's Mac (self-hosted runner): Betfair blocks GitHub's US servers.
 on:
   schedule:
+    - cron: '31 7 * * 1'    # Mon 07:31 UTC: import last week's bets before the 08:00 grading
     - cron: '30 11 * * 1'   # Mon 11:30 UTC (for Monday shortlist)
     - cron: '30 11 * * 2'   # Tue 11:30 UTC (for Tuesday shortlist)
     - cron: '0 17 * * 3'    # Wed 17:00 UTC
@@ -33,10 +34,13 @@ jobs:
           echo "$VENV/bin" >> "$GITHUB_PATH"
       - name: Snapshot
         run: python src/weekly/betfair_live.py
+      - name: Import my Betfair bets
+        continue-on-error: true
+        run: python src/weekly/betfair_bets.py
       - name: Commit snapshot
         run: |
           git config user.name "golf-bot"; git config user.email "golf-bot@users.noreply.github.com"
-          git add data/live
+          git add data/live bets
           git diff --cached --quiet && exit 0
-          git commit -m "prices: snapshot $(date -u +%Y-%m-%dT%H:%M)"
+          git commit -m "prices + bets: snapshot $(date -u +%Y-%m-%dT%H:%M)"
           for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

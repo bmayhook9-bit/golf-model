@@ -35,6 +35,9 @@ def main():
             ev = cand.loc[sc.idxmax()] if sc.max() >= 60 else None
         else: ev = None
         price, stake = float(b.price), float(b.stake)
+        imported = str(b.notes).startswith('bf:')
+        if imported and str(b.market).startswith('lay'): continue            # lays: Betfair's own profit, no grading or CLV
+        if imported and str(b['return']) not in ('', 'nan'): ev = None        # settled by Betfair already: keep its profit, still add CLV
         mk = str(b.market).strip().lower()
         k = K.get(mk, 1)
         if ev is not None:

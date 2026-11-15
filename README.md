@@ -16,11 +16,11 @@ measured against Betfair prices, plus a weekly value shortlist.
 - [x] Weekly pipeline (GitHub Actions) - built, dry-run tested; live Betfair calls untested until key is added
 
 ## Weekly routine
-- **You:** drop the week's ISN CSV into `inbox/isn/` (GitHub web: Add file > Upload files) before Wed 17:00 UK.
-- **Wed 17:00, 22:00, Thu 05:00, 10:00 UTC (your Mac):** Betfair price snapshots (`betfair-prices` workflow, self-hosted runner - Betfair blocks GitHub's US servers). The last one before each event's start is its closing price.
-- **Wed 17:30 UTC (GitHub):** results refreshed, shortlist posted as a GitHub issue and saved to `reports/latest.md`. Warns if prices are stale.
+- **You:** drop the week's ISN CSV into `inbox/isn/` (GitHub web: Add file > Upload files) before Mon 12:00 UK (or Tue 12:00 at the latest).
+- **Mon 11:30, Tue 11:30, Wed 17:00, 22:00, Thu 05:00, 10:00 UTC (your Mac):** Betfair price snapshots (`betfair-prices` workflow, self-hosted runner - Betfair blocks GitHub's US servers). The last one before each event's start is its closing price.
+- **Mon 12:00 + Tue 12:00 UTC (GitHub):** results refreshed, shortlist with value picks and ISN target prices posted as a GitHub issue and saved to `reports/latest.md`. Warns if prices are stale.
 - **You:** log any bet in `bets/log.csv` (date, event, player, market = win/top5/top10/top20, price, stake, book).
-- **Mon 08:00 UTC:** results refreshed, bets graded (result, P/L, closing price, CLV), summary posted as an issue.
+- **Mon 08:00 UTC:** results refreshed, last week's bets graded (result, P/L, closing price, CLV), summary posted as an issue.
 
 Secrets needed (Settings > Secrets and variables > Actions): `BF_USERNAME`, `BF_PASSWORD`, `BF_KEY` or `BF_APP_KEY` (Betfair delayed app key).
 

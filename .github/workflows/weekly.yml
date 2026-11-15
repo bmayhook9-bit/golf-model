@@ -2,8 +2,9 @@ name: weekly-golf
 
 on:
   schedule:
-    - cron: '30 17 * * 3'   # Wed 17:30 UTC - refresh results, shortlist (uses latest Mac price snapshot)
-    - cron: '0 8 * * 1'     # Mon 08:00 UTC - refresh results, grade bets
+    - cron: '0 8 * * 1'     # Mon 08:00 UTC - refresh results, grade last week's bets
+    - cron: '0 12 * * 1'    # Mon 12:00 UTC - shortlist (early prices; uses Mac snapshot from 11:30)
+    - cron: '0 12 * * 2'    # Tue 12:00 UTC - shortlist update (markets deeper, ISN may be newer)
   workflow_dispatch:
     inputs:
       job:
@@ -31,7 +32,7 @@ jobs:
         run: |
           J="${{ github.event.inputs.job }}"
           case "${{ github.event.schedule }}" in
-            '30 17 * * 3') J=shortlist ;;
+            '0 12 * * 1'|'0 12 * * 2') J=shortlist ;;
             '0 8 * * 1')   J=grade ;;
           esac
           echo "job=${J:-shortlist}" >> "$GITHUB_OUTPUT"

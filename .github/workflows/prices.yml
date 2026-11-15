@@ -2,6 +2,8 @@ name: betfair-prices
 # Runs on Ben's Mac (self-hosted runner): Betfair blocks GitHub's US servers.
 on:
   schedule:
+    - cron: '30 11 * * 1'   # Mon 11:30 UTC (for Monday shortlist)
+    - cron: '30 11 * * 2'   # Tue 11:30 UTC (for Tuesday shortlist)
     - cron: '0 17 * * 3'    # Wed 17:00 UTC
     - cron: '0 22 * * 3'    # Wed 22:00 UTC (closing, Asia/Middle East starts)
     - cron: '0 5 * * 4'     # Thu 05:00 UTC (closing, Europe)

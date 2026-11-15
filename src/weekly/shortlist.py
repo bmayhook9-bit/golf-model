@@ -86,6 +86,22 @@ def main(isn_fn=None, price_fn=None):
         lines += ["**Form watch** (back < 40.0, top 5 after 54 holes in last 3) - priced in on history, for context", ""]
         lines += [f"- {r.runner} @ {r.back} (last 3: {r.last3})" for r in fw.itertuples()] or ["- none"]
         lines.append("")
+    if isn_fn:
+        I = load_isn(isn_fn).sort_values('isn_p', ascending=False).head(25)
+        bf = {}
+        if not win.empty:
+            mp = match_names(I.Player, win.runner)
+            bk = dict(zip(win.runner, win.back))
+            bf = {p: bk.get(mp.get(p)) for p in I.Player}
+        lines += [f"## Target prices - {os.path.basename(isn_fn)}", "",
+                  f"Check bookmaker prices against these. Back only at or above the target (ISN fair price + {EDGE_MIN:.0%}).", "",
+                  "| ISN rank | Player | ISN fair | Target (win) | Betfair back | Last 3 | Lead? |", "|---|---|---|---|---|---|---|"]
+        for r in I.itertuples():
+            f = flags.get(norm(r.Player), {})
+            b = bf.get(r.Player)
+            lead = 'yes' if f.get('won_last3') and (b or r.isn_price) < LEAD_MAX_PRICE else ''
+            lines.append(f"| {int(r._4)} | {r.Player} | {r.isn_price:.1f} | {r.isn_price * (1 + EDGE_MIN):.1f} | {b if b and b == b else '-'} | {f.get('last3', '')} | {lead} |")
+        lines.append("")
     lines += ["---", "Log any bet you place in `bets/log.csv` (date, event, player, market, price, stake, book). Closing prices and results fill in automatically."]
     md = '\n'.join(lines)
     os.makedirs('reports', exist_ok=True)

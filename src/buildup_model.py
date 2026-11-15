@@ -51,19 +51,22 @@ def prepare(F):
 def predict(F, models):
     X = F[FEATS].values.astype(float)
     out = {}
-    for tgt, k in (('win', 1), ('t5', 5)):
+    for tgt, k in (('win', 1), ('t5', 5), ('t10', 10), ('t20', 20)):
+        if tgt not in models: continue
         m = models[tgt]
         z = (X - np.array(m['mean'])) / np.array(m['scale'])
         p = 1 / (1 + np.exp(-(z @ np.array(m['coef']) + m['intercept'])))
         p = pd.Series(p, index=F.index)
         out[tgt] = (p * k / p.groupby(F.ev).transform('sum')).clip(upper=0.97)
+    if 't10' in out: F['p_t10'], F['p_t20'] = out['t10'], out['t20']
     return out['win'], out['t5']
 
 def fit(F):
     from sklearn.linear_model import LogisticRegression
     from sklearn.preprocessing import StandardScaler
     models = {}
-    for tgt in ('win', 't5'):
+    F = F.assign(t10=(F.fin <= 10).astype(int), t20=(F.fin <= 20).astype(int))
+    for tgt in ('win', 't5', 't10', 't20'):
         sc = StandardScaler().fit(F[FEATS].values.astype(float))
         lr = LogisticRegression(C=0.5, max_iter=2000).fit(sc.transform(F[FEATS].values.astype(float)), F[tgt])
         models[tgt] = dict(mean=sc.mean_.tolist(), scale=sc.scale_.tolist(), coef=lr.coef_[0].tolist(), intercept=float(lr.intercept_[0]))

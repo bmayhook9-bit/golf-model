@@ -21,7 +21,10 @@ measured against Betfair prices, plus a weekly value shortlist.
 - [x] Winner case studies (`src/case_studies.py` -> `reports/winner_case_studies.md`), refreshed weekly; last week's winners shown in the shortlist
 
 ## Dashboard
-`app/dashboard.py` (Streamlit): This week (who's set up vs market, value, lead), Target prices (type a bookmaker price to check it),
+Main dashboard: **Golf Betting Desk** (Claude artifact https://claude.ai/artifact/2UFGAfcTtH18PwpTJrkpRP), built from `app/dashboard.html` by `src/build_html.py` -> `dist/dashboard.html` (rebuilt by the weekly jobs).
+Workflow: review who's set up -> type bookmaker prices -> add value bets to the betting card (target-profit staking) -> copy lines into `bets/log.csv`.
+
+Older Streamlit version: `app/dashboard.py` (Streamlit): This week (who's set up vs market, value, lead), Target prices (type a bookmaker price to check it),
 Players, Winners, Bets (P/L, CLV), Research. Reads `data/out/`, `bets/`, refreshed by the weekly jobs.
 Deploy: share.streamlit.io > Create app > repo `bmayhook9-bit/golf-model`, branch `main`, file `app/dashboard.py`.
 

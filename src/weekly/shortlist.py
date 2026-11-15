@@ -52,9 +52,11 @@ def buildup_rank(event_name, players, tour):
     F['key'] = BM.key(F.player); F['rating'] = F.key.map(_CACHE['cur'])
     F = BM.prepare(F)
     F['p_win'], F['p_t5'] = BM.predict(F, _CACHE['models'])
+    for c in ('p_t10', 'p_t20'):
+        if c not in F: F[c] = np.nan
     F['why'] = [BM.reasons(r, _CACHE['models']) for _, r in F.iterrows()]
     F['shown'] = F.player.map(dict(zip(up.player, up.shown)))
-    return F.sort_values('p_win', ascending=False)[['shown', 'p_win', 'p_t5', 'why']]
+    return F.sort_values('p_win', ascending=False)[['shown', 'p_win', 'p_t5', 'p_t10', 'p_t20', 'why']]
 
 def load_isn(fn):
     d = pd.read_csv(fn)
@@ -74,6 +76,7 @@ def buildup_lines(ev, players, tour, backs, flags, n=15):
     for i, r in enumerate(allB.itertuples(), 1):
         b = backs.get(r.shown)
         OUT['buildup'].append(dict(event=ev, tour=tour, rank=i, player=r.shown, model_win=r.p_win, model_top5=r.p_t5,
+                                   model_top10=r.p_t10, model_top20=r.p_t20,
                                    betfair_back=b if b and b == b else None, last3=flags.get(norm(r.shown), {}).get('last3', ''), why=r.why))
     for i, r in enumerate(B.itertuples(), 1):
         b = backs.get(r.shown)

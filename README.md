@@ -10,6 +10,8 @@ measured against Betfair prices, plus a weekly value shortlist.
 - [x] Betfair prices linked to events/players (~300 events 2023-26, 288/304 winners priced)
 - [x] Player-event table + results/schedule/contention/course-history features (`src/features.py`)
 - [x] First price test of build-up flags (`src/price_test.py`): none beat Betfair close 2023-25
+- [x] Simple player ratings (`src/ratings.py`) and course profiles incl. slope (`src/course_profile.py`)
+- [x] Segment tests (`src/segment_test.py`): lead = in-form PGA favourites (<20.0) underpriced
 - [ ] Winner-profile report
 - [ ] Weekly pipeline (GitHub Actions)
 

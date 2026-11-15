@@ -149,6 +149,11 @@ D['patterns'] = pat or {'names': NAMES, 'combos': []}
 # ---------- bets ----------
 bl = rcsv('bets/log.csv')
 D['bets'] = json.loads(bl.to_json(orient='records')) if not bl.empty else []
+# ---------- round 1 + lead record ----------
+fr = rcsv('data/out/frl.csv'); D['frl'] = json.loads(fr.to_json(orient='records')) if not fr.empty else []
+D['frl_bt'] = json.load(open('data/out/frl_backtest.json')) if os.path.exists('data/out/frl_backtest.json') else {}
+lh = rcsv('data/out/lead_history.csv'); D['lead_hist'] = json.loads(lh.to_json(orient='records')) if not lh.empty else []
+D['lead_comm'] = 0.02
 D['study_url'] = 'https://claude.ai/artifact/8BoouiLV4UdX3DWW97mCGu'
 
 js = json.dumps(D, separators=(',', ':'), ensure_ascii=False)

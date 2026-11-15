@@ -48,7 +48,16 @@ def main():
                 if pd.isna(pos): L.at[i, 'result_pos'] = 'MC'
                 else:
                     c = (F.pos == pos).sum(); L.at[i, 'result_pos'] = f"T{int(pos)}" if c > 1 else str(int(pos))
-                if mk.startswith('ew'):
+                if mk in ('frl', 'r1t5', 'r1t10'):
+                    # round-1 markets: settled on round-1 score, dead heats pro rata
+                    kk = {'frl': 1, 'r1t5': 5, 'r1t10': 10}[mk]
+                    s1 = F.r1; me = F[F.player == m[b.player]].r1.iloc[0]
+                    if pd.isna(me): L.at[i, 'settle'] = 'void'; L.at[i, 'return'] = '0'
+                    else:
+                        a = int((s1 < me).sum()); t = int((s1 == me).sum()); share = max(0, min(kk - a, t)) / t
+                        L.at[i, 'result_pos'] = f"R1 {'T' if t > 1 else ''}{a + 1}"
+                        L.at[i, 'settle'] = str(round(share, 3)); L.at[i, 'return'] = str(round(share * stake * price - stake, 2))
+                elif mk.startswith('ew'):
                     # market 'ew 1/5 8' = each way, place fraction 1/5, 8 places; stake = total (half win, half place)
                     try:
                         _, frac, places = mk.split(); num, den = frac.split('/'); fr = float(num) / float(den); places = int(places)
@@ -75,7 +84,7 @@ def main():
                     L.at[i, 'settle'] = str(round(share, 3)); L.at[i, 'return'] = str(round(share * stake * price - stake, 2))
         if not C.empty:
             mk2 = str(b.market).strip().lower()
-            if mk2.startswith('h2h'): continue
+            if mk2.startswith('h2h') or mk2 in ('frl', 'r1t5', 'r1t10'): continue
             c = C[C.market_type == MT.get('win' if mk2.startswith('ew') else mk2)]
             c = c[c.event.map(lambda n: fuzz.token_set_ratio(norm(b.event), norm(n)) >= 60)]
             m = match_names([b.player], c.runner)

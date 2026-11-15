@@ -42,3 +42,9 @@ Secrets needed (Settings > Secrets and variables > Actions): `BF_USERNAME`, `BF_
 - `src/espn_fetch.py`, `src/espn_meta.py` - raw ESPN scoreboards + course metadata
 - `src/espn_parse.py` - -> `data/events.csv`, `data/results.csv`, `data/holes.csv`
 - `src/link_prices.py` - -> `data/player_event.csv` (results + closing prices)
+
+## Desk additions (15 Nov 2026)
+- **Round 1** view: first-round leader / top 5 / top 10 after R1 fair prices (`src/extras.py`, 20k Monte Carlo, ratings shrunk ×0.6, course R1 spread, dead heats). Calibrated on 2025-26 out of sample; not tested against market prices; tee-time waves not modelled. Log markets as `frl`, `r1t5`, `r1t10` - graded on round-1 score.
+- **Lead record** view: every qualifier for the tracked lead since 2023, P/L at Betfair close (2% commission), research v 2026 holdout. New qualifiers are added from the live price snapshots.
+- **DP World Tour**: events appear automatically when Betfair lists them; fair prices are model-only (flagged in the desk).
+- **Price alerts**: set an alert price on any fancy; the This week view lists fancies at/above it or showing value.

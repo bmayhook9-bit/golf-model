@@ -120,11 +120,13 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
       <a href="#week" data-v="week">This week</a>
       <a href="#fancies" data-v="fancies">My fancies</a>
       <a href="#h2h" data-v="h2h">Head-to-head</a>
+      <a href="#round1" data-v="round1">Round 1</a>
       <a href="#card" data-v="card">Betting card <span id="navCount" class="mono"></span></a>
       <a href="#players" data-v="players">Players</a>
       <a href="#courses" data-v="courses">Courses</a>
       <a href="#trends" data-v="trends">Trends</a>
       <a href="#winners" data-v="winners">Winners</a>
+      <a href="#lead" data-v="lead">Lead record</a>
       <a href="#tracker" data-v="tracker">Tracker</a>
       <a href="#f1" data-v="f1">F1</a>
     </nav>
@@ -141,6 +143,7 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
         <div class="chips" id="evChips"></div>
       </div>
       <div class="steps"><span><b>1</b> Review who's set up</span>·<span><b>2</b> Type the best bookmaker price you can find</span>·<span><b>3</b> Add value bets to your card</span>·<span><b>4</b> Copy the card into your bet log</span></div>
+      <div id="alerts"></div>
       <div class="tiles" id="tiles"></div>
       <div class="panel">
         <div class="row" style="justify-content:space-between">
@@ -223,6 +226,10 @@ dialog::backdrop{background:rgba(10,20,15,.45)}
   <div class="wgrid" id="wgrid"></div>
 </section>
 
+<!-- ============ ROUND 1 ============ -->
+<section class="view" id="v-round1"><div id="r1View"></div></section>
+<!-- ============ LEAD RECORD ============ -->
+<section class="view" id="v-lead"><div id="leadView"></div></section>
 <!-- ============ TRACKER ============ -->
 <section class="view" id="v-tracker"><div id="trackerView"></div></section>
 
@@ -256,7 +263,7 @@ const store = { get(k, d) { try { const v = localStorage.getItem('gbd.' + k); re
 // ---- cross-device state + placed bets (artifact database; falls back to this browser only) ----
 let DB = null, syncT = null;
 function scheduleSync() { if (!DB) return; clearTimeout(syncT); syncT = setTimeout(async () => {
-  try { await DB.doc('state/main').set({ card: S.card, prices: S.prices, fancies: S.fancies, tiers: S.tiers, ew: S.ew, saved: new Date().toISOString() }); setSyncPill('synced'); }
+  try { await DB.doc('state/main').set({ card: S.card, prices: S.prices, fancies: S.fancies, tiers: S.tiers, ew: S.ew, targets: S.targets, saved: new Date().toISOString() }); setSyncPill('synced'); }
   catch (e) { setSyncPill('error'); } }, 800); }
 function setSyncPill(st) { const el = $('#syncPill'); if (!el) return;
   el.className = 'pill ' + (st === 'synced' ? 'good' : st === 'error' ? 'bad' : st === 'local' ? '' : 'warn');
@@ -268,7 +275,7 @@ async function initDB() {
   try {
     const snap = await db.doc('state/main').get(); clearTimeout(timer); DB = db;
     const v = snap && (snap.data ? snap.data() : snap);
-    if (v && v.saved) { ['card', 'prices', 'fancies', 'tiers', 'ew'].forEach(k => { if (v[k] != null) S[k] = v[k]; }); renderAll(); }
+    if (v && v.saved) { ['card', 'prices', 'fancies', 'tiers', 'ew', 'targets'].forEach(k => { if (v[k] != null) S[k] = v[k]; }); renderAll(); }
     setSyncPill('synced'); loadPlaced();
   } catch (e) { clearTimeout(timer); setSyncPill('local'); }
 }
@@ -288,13 +295,15 @@ function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add
 async function copy(text, msg) { try { await navigator.clipboard.writeText(text); toast(msg); } catch { showText(text); } }
 function showText(text) { $('#dlgBody').innerHTML = `<div class="dlghead"><h2>Copy this</h2><button onclick="dlg.close()">Close</button></div><textarea style="width:100%;height:260px;font:13px var(--mono)" readonly>${esc(text)}</textarea>`; dlg.showModal(); }
 const dlg = $('#dlg');
-const MK = { win: { lab: 'Win', k: 1, tier: 'win' }, ew: { lab: 'Each way', k: 1, tier: 'win' }, t5: { lab: 'Top 5', k: 5, tier: 't5' }, t10: { lab: 'Top 10', k: 10, tier: 't10' }, t20: { lab: 'Top 20', k: 20, tier: 't20' }, h2h: { lab: 'Head-to-head', k: 1, tier: 'h2h' } };
+const MK = { win: { lab: 'Win', k: 1, tier: 'win' }, ew: { lab: 'Each way', k: 1, tier: 'win' }, t5: { lab: 'Top 5', k: 5, tier: 't5' }, t10: { lab: 'Top 10', k: 10, tier: 't10' }, t20: { lab: 'Top 20', k: 20, tier: 't20' }, h2h: { lab: 'Head-to-head', k: 1, tier: 'h2h' },
+  frl: { lab: 'R1 leader', k: 1, tier: 'frl' }, r1t5: { lab: 'R1 top 5', k: 5, tier: 't5' }, r1t10: { lab: 'R1 top 10', k: 10, tier: 't10' } };
 const MK_BOARD = ['win', 'ew', 't5', 't10', 't20'];
 const MARGIN = (D.meta && D.meta.edge_min) || 0.2;
 
 // ---------- state ----------
 const S = { ev: 0, mkt: 'win', q: '', onlyVal: false, sort: 'rank', prices: store.get('prices', {}), card: store.get('card', []),
-            tiers: Object.assign({ win: 500, t5: 100, t10: 75, t20: 50, h2h: 50 }, store.get('tiers', {})),
+            tiers: Object.assign({ win: 500, t5: 100, t10: 75, t20: 50, h2h: 50, frl: 200 }, store.get('tiers', {})),
+            targets: store.get('targets', {}),
             ew: store.get('ew', { f: 0.2, p: 8 }),
             fancies: store.get('fancies', ['Michael Thorbjornsen', 'Sepp Straka', 'Cam Davis', 'Brooks Koepka', 'Denny McCarthy', 'Chris Kirk', 'Eric Cole', 'Harry Hall', 'Bud Cauley']) };
 const ev = () => D.events[S.ev];
@@ -469,7 +478,7 @@ function cardHtml() {
       <span>Biggest single return</span><span class="v">£${Math.max(0, ...S.card.map(b => (+b.stake || 0) * b.price)).toFixed(2)}</span></div>
     <div class="row"><button class="primary" id="placeAll" ${S.card.length ? '' : 'disabled'}>Mark all as placed</button><button id="cpLog" ${S.card.length ? '' : 'disabled'}>Copy for bet log</button><button id="cpTxt" ${S.card.length ? '' : 'disabled'}>Copy card as text</button><button class="ghost" id="clr" ${S.card.length ? '' : 'disabled'}>Clear</button></div>
     <details style="margin-top:12px"><summary class="note" style="cursor:pointer">Staking tiers (target profit per bet)</summary>
-      <div class="row" style="margin-top:8px">${['win', 't5', 't10', 't20', 'h2h'].map(m => `<label class="note">${m === 'win' ? 'Win / each way' : MK[m].lab} £<input data-tier="${m}" value="${S.tiers[m]}" style="width:64px" inputmode="decimal"></label>`).join('')}</div></details>
+      <div class="row" style="margin-top:8px">${['win', 't5', 't10', 't20', 'h2h', 'frl'].map(m => `<label class="note">${m === 'win' ? 'Win / each way' : m === 't5' ? 'Top 5 / R1 top 5' : m === 't10' ? 'Top 10 / R1 top 10' : MK[m].lab} £<input data-tier="${m}" value="${S.tiers[m]}" style="width:64px" inputmode="decimal"></label>`).join('')}</div></details>
     <p class="note" style="margin-top:10px">Press "Placed" once a bet is on: it goes into your bet log automatically (synced Monday morning, before grading). Results, closing prices and CLV fill in on Monday.</p></div>`;
 }
 function renderCard() {
@@ -623,6 +632,80 @@ function renderTracker() {
 }
 
 
+// ---------- round 1: first-round leader and top 5 / top 10 after round 1 ----------
+function r1Rows(e) { const n = KEYOF(e.name); return (D.frl || []).filter(x => KEYOF(x.event) === n); }
+function renderR1() {
+  const e = ev(); const el = $('#r1View');
+  if (!e) { el.innerHTML = '<div class="empty">No event this week yet.</div>'; return; }
+  const rows = r1Rows(e); const bt = D.frl_bt || {};
+  if (!rows.length) { el.innerHTML = '<div class="empty">Round-1 prices appear once this week\'s field is in (Monday/Tuesday run).</div>'; return; }
+  const q = (S.r1q || '').toLowerCase();
+  const mk = [['frl', 'p_r1_lead', 'R1 leader'], ['r1t5', 'p_r1_t5', 'R1 top 5'], ['r1t10', 'p_r1_t10', 'R1 top 10']];
+  const onCard = new Set(S.card.filter(b => b.ev === e.name).map(b => b.p + '|' + b.m));
+  const body = rows.filter(r => !q || r.player.toLowerCase().includes(q)).sort((a, b) => b.p_r1_lead - a.p_r1_lead).slice(0, 80).map(r => `<tr><td><button class="pname" data-k="${esc(KEYOF(r.player))}">${esc(r.player)}</button></td><td class="n">${r.rating >= 0 ? '+' : ''}${r.rating.toFixed(2)}</td>
+    ${mk.map(([m, c]) => { const p = r[c], fair = 1 / p, min = fair * (1 + MARGIN), yk = pkey(e.name, r.player, m), y = S.prices[yk], val = y && y >= min;
+      return `<td class="n">${fmtO(fair)}</td><td class="n note">${fmtO(min)}</td><td><input data-r1p="${esc(yk)}" value="${y || ''}" style="width:58px" inputmode="decimal" aria-label="Your ${m} price for ${esc(r.player)}">${val ? ` <button class="sm ${onCard.has(r.player + '|' + m) ? '' : 'primary'}" data-r1add="${esc(r.player)}|${m}">${onCard.has(r.player + '|' + m) ? 'Added' : 'Add'}</button>` : ''}</td>`; }).join('')}</tr>`).join('');
+  const cal = (bt.lead || []).map(b => `<tr><td class="mono">${esc(b.bin)}</td><td class="n">${b.n}</td><td class="n">${b.pred}</td><td class="n">${b.actual}</td></tr>`).join('');
+  el.innerHTML = `<div class="panel"><div class="row" style="justify-content:space-between"><h2>Round 1 · ${esc(e.name)}</h2><span class="note">${esc(rows[0].course || '')} · round-1 spread ${rows[0].sigma} strokes</span></div>
+    <p class="note" style="margin:6px 0 10px">Fair prices from 20,000 simulated first rounds using each player's rating, scaled for this course's round-1 spread, with dead heats split as bookmakers settle them. Type a bookmaker price: if it's at or above the minimum (fair + ${Math.round(MARGIN * 100)}%), you can add it to your card. Graded on the round-1 score.</p>
+    <div class="toolbar"><input id="r1q" placeholder="Find a player" value="${esc(S.r1q || '')}" aria-label="Find a player"><span class="note">Top 80 by R1 leader chance</span></div>
+    <div class="tablewrap" style="max-height:620px"><table><thead><tr><th rowspan="2">Player</th><th rowspan="2">Rating</th>${mk.map(m => `<th colspan="3" style="text-align:center">${m[2]}</th>`).join('')}</tr><tr>${mk.map(() => '<th>Fair</th><th>Min</th><th>Your price</th>').join('')}</tr></thead><tbody>${body}</tbody></table></div></div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="panel"><h3>Does it work?</h3><p class="note" style="margin:6px 0 8px">Tested on ${bt.events || '–'} events in 2025-26 that the model never saw (rating shrink ${bt.shrink} fitted on 2023-24). Predicted v actual leaders by chance band: close to 1:1, so the fair prices are honest.</p>
+        <div class="tablewrap"><table><thead><tr><th>Chance band</th><th>Players</th><th>Predicted leaders</th><th>Actual</th></tr></thead><tbody>${cal}</tbody></table></div></div>
+      <div class="panel"><h3>Read this before betting</h3>
+        <p class="note" style="margin-top:6px">− Calibrated isn't the same as profitable. There are no Betfair round-1 prices in the history, so this hasn't been tested against the market.</p>
+        <p class="note">− The tee-time draw isn't modelled. On windy days the AM/PM wave can be worth more than the skill gap: check the forecast and tee times (out Tuesday) before betting.</p>
+        <p class="note">− Round-1 books carry big margins, so value tends to show up at longer prices with each-way or top-5 terms, not on the favourites.</p>
+        <p class="note">− Dead heats are common: a 40.0 winner tied with two others pays a third.</p></div></div>`;
+  $('#r1q').oninput = ev2 => { S.r1q = ev2.target.value; const pos = ev2.target.selectionStart; renderR1(); const n = $('#r1q'); n.focus(); n.setSelectionRange(pos, pos); };
+  $$('#r1View .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
+  $$('#r1View input[data-r1p]').forEach(inp => inp.onchange = () => { const v = parseFloat(inp.value); if (v > 1) S.prices[inp.dataset.r1p] = v; else delete S.prices[inp.dataset.r1p]; store.set('prices', S.prices); renderR1(); });
+  $$('#r1View [data-r1add]').forEach(b => b.onclick = () => { const [p, m] = b.dataset.r1add.split('|'); addR1Bet(p, m); });
+}
+function KEYOF(p) { return String(p).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[^a-z ]/g, ' ').split(/\s+/).filter(Boolean).join(' '); }
+function addR1Bet(p, m) {
+  const e = ev(); const r = r1Rows(e).find(x => x.player === p); if (!r) return;
+  if (S.card.some(b => b.ev === e.name && b.p === p && b.m === m)) { toast('Already on your card'); return; }
+  const fp = r[{ frl: 'p_r1_lead', r1t5: 'p_r1_t5', r1t10: 'p_r1_t10' }[m]], price = S.prices[pkey(e.name, p, m)];
+  const b = { id: Date.now(), ev: e.name, k: KEYOF(p), p, m, price, fp, fair: 1 / fp, edge: fp * price - 1, src: 'R1 model', stake: tierStake(m, price), book: '' };
+  S.card.push(b); store.set('card', S.card); renderCard(); renderR1(); toast(`${p} (${MK[m].lab}) added to card`);
+}
+
+// ---------- lead record: every qualifier for the one pattern that beat the market ----------
+function renderLead() {
+  const L = D.lead_hist || []; const el = $('#leadView');
+  if (!L.length) { el.innerHTML = '<div class="empty">No history yet.</div>'; return; }
+  const sum = (a, f) => a.reduce((s, x) => s + f(x), 0);
+  const part = s => { const x = L.filter(r => !s || r.sample === s); const w = sum(x, r => r.won), ex = sum(x, r => 1 / r.bf_win), pl = sum(x, r => r.pl_1), pl5 = sum(x, r => r.pl_500), stk = sum(x, r => r.stake_500);
+    return { n: x.length, w, ex, pl, roi: pl / x.length, pl5, stk }; };
+  const A = part(), I = part('research (2023-25)'), H = part('holdout (2026)');
+  const e = ev(); const now = e ? e.players.filter(r => r.lead) : [];
+  const clv = L.filter(r => r.clv_72h != null);
+  const tile = (lab, big, sub, col) => `<div class="tile"><span class="lab">${lab}</span><span class="big num" ${col ? `style="color:${col}"` : ''}>${big}</span><span class="sub">${sub}</span></div>`;
+  const money = v => `${v >= 0 ? '+' : '−'}£${Math.abs(v).toFixed(0)}`;
+  el.innerHTML = `<div class="panel" style="margin-bottom:16px"><h2>Lead record</h2><p class="note" style="margin-top:6px">Rule: PGA Tour, Betfair win price under ${D.meta.lead_max_price || 20}.0, won in one of the last 3 starts. Prices are Betfair's close; P/L after ${Math.round((D.lead_comm || 0.02) * 100)}% commission. 2023-25 is where the pattern was found; 2026 is the honest out-of-sample check.</p></div>
+    <div class="tiles">
+      ${tile('Qualifiers', A.n, `${A.w} won v ${A.ex.toFixed(1)} the prices expected`)}
+      ${tile('£1 level stakes', money(A.pl).replace('£', '£'), `${(A.roi * 100).toFixed(0)}% return per bet`, A.pl >= 0 ? 'var(--good)' : 'var(--bad)')}
+      ${tile('Your staking (win £500)', money(A.pl5), `on £${A.stk.toFixed(0)} staked`, A.pl5 >= 0 ? 'var(--good)' : 'var(--bad)')}
+      ${tile('Research 2023-25', `${I.w} v ${I.ex.toFixed(1)}`, `${I.n} bets · ${(I.roi * 100).toFixed(0)}% per bet`)}
+      ${tile('Holdout 2026', `${H.w} v ${H.ex.toFixed(1)}`, `${H.n} bets · ${(H.roi * 100).toFixed(0)}% per bet`, H.pl >= 0 ? 'var(--good)' : 'var(--bad)')}
+      ${tile('This week', now.length, now.length ? now.map(r => esc(r.p)).join(', ') : 'no qualifier yet')}
+    </div>
+    <div class="grid2"><div class="panel"><h3>Cumulative P/L, £1 level stakes</h3><div style="position:relative;height:260px;margin-top:8px"><canvas id="leadChart"></canvas></div></div>
+      <div class="panel"><h3>How much to trust it</h3>
+        <p class="note" style="margin-top:6px">− ${A.n} bets and ${A.w} winners is a small sample: one or two big-priced winners swing the return a lot. Expect long losing runs: at these prices roughly 4 in 5 bets lose.</p>
+        <p class="note">− The 2026 holdout (${H.n} bets, ${H.w} won v ${H.ex.toFixed(1)} expected) ${H.w > H.ex * 1.25 ? 'backs it up' : H.w >= H.ex ? 'is roughly in line with the prices: it neither confirms nor kills the pattern yet' : 'has run below the prices so far'}. Most of the edge comes from 2023-25, where the pattern was found, so treat it as unproven and keep stakes small until your own record builds.</p>
+        <p class="note">− Betting 72 hours out instead of at the close: ${clv.length ? `${(100 * sum(clv, r => r.clv_72h) / clv.length).toFixed(1)}% average price difference over ${clv.length} bets with an early price (positive = early price was better)` : 'not enough early prices'}.</p>
+        <p class="note">− Your own record on it builds up in the Tracker once you log bets.</p></div></div>
+    <div class="panel" style="margin-top:16px"><h3>Every qualifier</h3><div class="tablewrap" style="max-height:520px;margin-top:8px"><table><thead><tr><th>Date</th><th>Event</th><th>Player</th><th>Close</th><th>72h before</th><th>Finish</th><th>£1 P/L</th><th>Win-£500 stake</th><th>P/L</th><th>Sample</th></tr></thead><tbody>
+    ${L.slice().reverse().map(r => `<tr ${r.won ? 'style="background:var(--good-soft)"' : ''}><td class="mono">${esc(r.date)}</td><td>${esc(r.name)}</td><td>${esc(r.player)}</td><td class="n">${fmtO(r.bf_win)}</td><td class="n">${r.bf_win_72h ? fmtO(r.bf_win_72h) : '–'}</td><td>${esc(String(r.fin ?? ''))}</td><td class="n">${r.pl_1 >= 0 ? '+' : ''}${r.pl_1.toFixed(2)}</td><td class="n">£${r.stake_500.toFixed(0)}</td><td class="n">${money(r.pl_500)}</td><td class="note">${esc(r.sample)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  let c = 0; const pts = L.map(r => (c += r.pl_1, { x: r.date, y: +c.toFixed(2) }));
+  new Chart($('#leadChart'), { type: 'line', data: { labels: pts.map(p => p.x), datasets: [{ data: pts.map(p => p.y), borderColor: css('--accent'), pointRadius: 0, borderWidth: 2, tension: 0 }] },
+    options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 6 } }, y: { title: { display: true, text: '£ (level £1 stakes)' } } } } });
+}
+
 // ---------- ask Claude ----------
 function playerContext(k) {
   const e = ev(), r = e && e.players.find(x => x.k === k), p = D.players[k] || {};
@@ -709,6 +792,7 @@ function renderFancies() {
       <div class="grid2" style="gap:10px;grid-template-columns:1fr 1fr">
         <div><div class="note" style="font-weight:600;color:var(--good)">In his favour</div>${nt.good.length ? nt.good.map(x => `<div class="note">+ ${esc(x)}</div>`).join('') : '<div class="note">Nothing stands out</div>'}</div>
         <div><div class="note" style="font-weight:600;color:var(--bad)">Red flags</div>${nt.bad.length ? nt.bad.map(x => `<div class="note">− ${esc(x)}</div>`).join('') : '<div class="note">None</div>'}</div></div>
+      <div class="row" style="margin-top:10px;gap:6px"><label class="note">Alert me when Betfair win price is at least</label><input data-target="${esc(r.p.toLowerCase())}" value="${S.targets[r.p.toLowerCase()] || ''}" placeholder="e.g. 40" style="width:70px" inputmode="decimal"></div>
       ${askBox(r.k)}
     </div>`; }).join('') || '<div class="empty">Add the players you fancy to check them.</div>';
   $$('#fgrid [data-frm]').forEach(b => b.onclick = () => { S.fancies = S.fancies.filter(n => n.toLowerCase() !== b.dataset.frm.toLowerCase()); store.set('fancies', S.fancies); renderFancies(); });
@@ -716,6 +800,7 @@ function renderFancies() {
   $$('#fgrid [data-fadd]').forEach(b => b.onclick = () => addBet(b.dataset.fadd, b.dataset.m));
   $$('#fgrid .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
   wireAsk($('#fgrid'));
+  $$('#fgrid input[data-target]').forEach(inp => inp.onchange = () => { const v = parseFloat(inp.value); if (v > 1) S.targets[inp.dataset.target] = v; else delete S.targets[inp.dataset.target]; store.set('targets', S.targets); renderAlerts(); toast(v > 1 ? 'Alert price saved' : 'Alert cleared'); });
 }
 function addFancy() { const n = $('#fq').value.trim(); if (!n) return; if (!S.fancies.some(x => x.toLowerCase() === n.toLowerCase())) S.fancies.push(n); store.set('fancies', S.fancies); $('#fq').value = ''; renderFancies(); }
 
@@ -752,7 +837,7 @@ function renderH2H() {
 }
 
 // ---------- routing ----------
-const VIEWS = ['week', 'fancies', 'h2h', 'card', 'players', 'courses', 'trends', 'winners', 'tracker', 'f1'];
+const VIEWS = ['week', 'fancies', 'h2h', 'round1', 'lead', 'card', 'players', 'courses', 'trends', 'winners', 'tracker', 'f1'];
 const rendered = {};
 function route() {
   const v = VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'week';
@@ -765,8 +850,29 @@ function route() {
   if (v === 'trends' && !rendered.trends) { renderTrends(); rendered.trends = 1; }
   if (v === 'winners' && !rendered.winners) { renderWinners(); rendered.winners = 1; }
   if (v === 'tracker') renderTracker();
+  if (v === 'round1') renderR1();
+  if (v === 'lead' && !rendered.lead) { renderLead(); rendered.lead = 1; }
 }
-function renderWeek() { renderEvChips(); renderBoard(); renderScatter(); if (ev()) renderCoursePanel(); }
+function renderWeek() { renderEvChips(); renderAlerts(); renderBoard(); renderScatter(); if (ev()) renderCoursePanel(); }
+// ---------- price alerts: your fancies at or above your target, or showing value ----------
+function alertsFor(e) {
+  const out = [];
+  for (const n of S.fancies) {
+    const r = e.players.find(x => x.p.toLowerCase() === n.toLowerCase()); if (!r) continue;
+    const t = S.targets[n.toLowerCase()];
+    if (t && r.bf && r.bf >= t) out.push({ r, kind: 'target', txt: `${fmtO(r.bf)} on Betfair, at or above your alert price ${fmtO(t)}` });
+    for (const m of ['win', 't5', 't10', 't20']) { const v = verdictFor(e, r, m); if (v.value && !v.yours) out.push({ r, kind: 'value', m, txt: `${MK[m].lab} ${fmtO(v.ref)} on Betfair v fair ${fmtO(v.fair)} (${v.edge >= 0 ? '+' : ''}${Math.round(v.edge * 100)}%)` }); }
+  }
+  return out;
+}
+function renderAlerts() {
+  const e = ev(); const el = $('#alerts'); if (!e) { el.innerHTML = ''; return; }
+  const a = alertsFor(e);
+  const warn = e.tour === 'eur' ? `<div class="panel" style="border-color:var(--warn);margin-bottom:12px"><span class="pill warn">DP World Tour</span> <span class="note">ISN doesn't cover this tour, so fair prices come from the build-up model, which hasn't beaten Betfair's closing price in testing. Use "value" here as a shortlist to check, not a bet signal on its own.</span></div>` : '';
+  el.innerHTML = warn + (a.length ? `<div class="panel" style="margin-bottom:12px"><h3>Price alerts · your fancies</h3>${a.map(x => `<div class="row" style="gap:8px;margin-top:6px"><span class="pill ${x.kind === 'value' ? 'good' : 'acc'}">${x.kind === 'value' ? 'Value' : 'Alert price hit'}</span><button class="pname" data-k="${x.r.k}">${esc(x.r.p)}</button><span class="note">${esc(x.txt)}</span>${x.m ? `<button class="sm" data-alertadd="${x.r.k}|${x.m}">Add to card</button>` : ''}</div>`).join('')}</div>` : '');
+  $$('#alerts .pname').forEach(b => b.onclick = () => openPlayer(b.dataset.k));
+  $$('#alerts [data-alertadd]').forEach(b => b.onclick = () => { const [k, m] = b.dataset.alertadd.split('|'); addBet(k, m); renderAlerts(); });
+}
 $('#q').oninput = e => { S.q = e.target.value; renderBoard(); };
 $('#mkt').onchange = e => { S.mkt = e.target.value; $('#ewTerms').style.display = S.mkt === 'ew' ? 'inline-flex' : 'none'; renderBoard(); renderScatter(); };
 const setEw = (f, p) => { S.ew = { f: +f, p: +p }; store.set('ew', S.ew); $('#ewF').value = String(S.ew.f); $('#ewP').value = String(S.ew.p); renderBoard(); if (location.hash === '#fancies') renderFancies(); };

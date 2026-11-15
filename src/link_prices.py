@@ -37,6 +37,8 @@ for mt, col in [('WINNER','bf_win'),('TOP_5_FINISH','bf_t5'),('TOP_10_FINISH','b
     # exact normalised match, then fuzzy within event
     m1 = out.merge(q[['tour','event_id','pn','ltp_close']], on=['tour','event_id','pn'], how='left')
     out[col] = m1.ltp_close.values
+    if mt == 'WINNER':
+        m2 = out.merge(q[['tour','event_id','pn','ltp_72h']], on=['tour','event_id','pn'], how='left'); out['bf_win_72h'] = m2.ltp_72h.values
     miss = out[col].isna() & out.set_index(['tour','event_id']).index.isin(q.set_index(['tour','event_id']).index)
     for (t, e), g in out[miss].groupby(['tour','event_id']):
         names = q[(q.tour == t) & (q.event_id == e)]

@@ -47,6 +47,7 @@ jobs:
         if: steps.pick.outputs.job == 'shortlist'
         run: |
           python src/weekly/shortlist.py > /dev/null
+          python src/extras.py
           python src/export_dashboard.py
           python src/build_html.py
           gh issue create --title "Golf shortlist $(date -u +%Y-%m-%d)" --body-file reports/latest.md
@@ -54,6 +55,7 @@ jobs:
         if: steps.pick.outputs.job == 'grade'
         run: |
           python src/weekly/grade.py | tee grade.txt
+          python src/extras.py
           python src/export_dashboard.py
           python src/build_html.py
           if [ -s grade.txt ]; then gh issue create --title "Golf bets graded $(date -u +%Y-%m-%d)" --body-file grade.txt; fi

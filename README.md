@@ -8,7 +8,8 @@ measured against Betfair prices, plus a weekly value shortlist.
 - [x] Betfair BASIC historic golf (2023-2026): winner + top 5/10/20 closing prices
 - [x] Results/scorecard history, both tours (ESPN, 2019-26; DPWT rounds from 2021, PGA hole-by-hole ~365 events)
 - [x] Betfair prices linked to events/players (~300 events 2023-26, 288/304 winners priced)
-- [ ] Player-event table + build-up features
+- [x] Player-event table + results/schedule/contention/course-history features (`src/features.py`)
+- [x] First price test of build-up flags (`src/price_test.py`): none beat Betfair close 2023-25
 - [ ] Winner-profile report
 - [ ] Weekly pipeline (GitHub Actions)
 

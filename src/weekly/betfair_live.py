@@ -7,10 +7,21 @@ API = 'https://api.betfair.com/exchange/betting/rest/v1.0/'
 MARKETS = ['WINNER', 'TOP_5_FINISH', 'TOP_10_FINISH', 'TOP_20_FINISH']
 
 def login():
+    for v in ('BF_USERNAME', 'BF_PASSWORD', 'BF_APP_KEY'):
+        if not os.environ.get(v): sys.exit(f'Missing secret {v}')
     r = requests.post('https://identitysso.betfair.com/api/login',
                       data={'username': os.environ['BF_USERNAME'], 'password': os.environ['BF_PASSWORD']},
                       headers={'X-Application': os.environ['BF_APP_KEY'], 'Accept': 'application/json'}, timeout=30)
-    j = r.json()
+    try:
+        j = r.json()
+    except ValueError:
+        try:
+            geo = requests.get('https://ipinfo.io/json', timeout=10).json()
+            where = f"{geo.get('city')}, {geo.get('country')}"
+        except Exception:
+            where = 'unknown'
+        sys.exit(f"Betfair login returned non-JSON (HTTP {r.status_code}, runner location: {where}). "
+                 f"First 300 chars: {r.text[:300]!r}")
     if j.get('status') != 'SUCCESS': sys.exit(f"Betfair login failed: {j.get('error')}")
     return j['token']
 

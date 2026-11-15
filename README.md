@@ -22,7 +22,7 @@ measured against Betfair prices, plus a weekly value shortlist.
 - **You:** log any bet in `bets/log.csv` (date, event, player, market = win/top5/top10/top20, price, stake, book).
 - **Mon 08:00 UTC:** results refreshed, bets graded (result, P/L, closing price, CLV), summary posted as an issue.
 
-Secrets needed (Settings > Secrets and variables > Actions): `BF_USERNAME`, `BF_PASSWORD`, `BF_APP_KEY` (Betfair delayed app key).
+Secrets needed (Settings > Secrets and variables > Actions): `BF_USERNAME`, `BF_PASSWORD`, `BF_KEY` or `BF_APP_KEY` (Betfair delayed app key).
 
 ## Layout
 - `src/betfair_extract.py` - Betfair BASIC files -> `data/betfair_prices.csv`

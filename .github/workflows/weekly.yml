@@ -25,7 +25,7 @@ jobs:
     env:
       BF_USERNAME: ${{ secrets.BF_USERNAME }}
       BF_PASSWORD: ${{ secrets.BF_PASSWORD }}
-      BF_APP_KEY: ${{ secrets.BF_APP_KEY }}
+      BF_APP_KEY: ${{ secrets.BF_APP_KEY || secrets.BF_KEY }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4

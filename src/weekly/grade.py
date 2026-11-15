@@ -12,8 +12,10 @@ def closing_prices():
     fs = sorted(glob.glob('data/live/prices_*.csv'))
     if not fs: return pd.DataFrame()
     P = pd.concat(pd.read_csv(f) for f in fs)
-    P['snapshot'] = pd.to_datetime(P.snapshot, utc=True); P['market_start'] = pd.to_datetime(P.market_start, utc=True)
-    P = P[(P.snapshot <= P.market_start) & P.back.notna()]
+    P['snapshot'] = pd.to_datetime(P.snapshot, utc=True)
+    P['event'] = P.event.astype(str).str.strip()
+    # Betfair moves marketStartTime to each round, so 'closing' = last snapshot taken before the market went in-play
+    P = P[(P.in_play.astype(str).str.lower() != 'true') & P.back.notna()]
     return P.sort_values('snapshot').groupby(['event', 'market_type', 'runner']).tail(1)
 
 def main():

@@ -45,7 +45,12 @@ def main(isn_fn=None, price_fn=None):
     lines += [f"Prices: `{os.path.basename(price_fn)}` ({age_h:.0f}h old) · ISN model: `{os.path.basename(isn_fn) if isn_fn else 'none'}`", ""]
     if age_h > 12:
         lines += [f"**Warning: prices are {age_h:.0f} hours old** - the Mac snapshot probably didn't run. Check prices before betting.", ""]
-    win = P[(P.market_type == 'WINNER') & (P.status == 'ACTIVE')].copy()
+    P['event'] = P.event.astype(str).str.strip()
+    tour = P.event.str.match(r'^(PGA|DPW|DP World)') & ~P.event.str.contains('LPGA|Champions|Champs|Senior', case=False)
+    pre = P.in_play.astype(str).str.lower() != 'true'
+    win = P[(P.market_type == 'WINNER') & (P.status == 'ACTIVE') & tour & pre].copy()
+    if win.empty:
+        lines += ["No pre-tournament PGA Tour or DP World Tour win markets in this snapshot (markets usually open early in the week).", ""]
     for ev, g in win.groupby('event'):
         g = g.copy()
         g['fl'] = g.runner.map(lambda n: flags.get(norm(n), {}))

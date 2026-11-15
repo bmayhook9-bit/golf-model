@@ -1,0 +1,40 @@
+name: betfair-prices
+# Runs on Ben's Mac (self-hosted runner): Betfair blocks GitHub's US servers.
+on:
+  schedule:
+    - cron: '0 17 * * 3'    # Wed 17:00 UTC
+    - cron: '0 22 * * 3'    # Wed 22:00 UTC (closing, Asia/Middle East starts)
+    - cron: '0 5 * * 4'     # Thu 05:00 UTC (closing, Europe)
+    - cron: '0 10 * * 4'    # Thu 10:00 UTC (closing, US)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency: betfair-prices
+
+jobs:
+  snapshot:
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 15
+    env:
+      BF_USERNAME: ${{ secrets.BF_USERNAME }}
+      BF_PASSWORD: ${{ secrets.BF_PASSWORD }}
+      BF_APP_KEY: ${{ secrets.BF_APP_KEY || secrets.BF_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python env (reused between runs)
+        run: |
+          VENV="$HOME/.golf-model-venv"
+          [ -x "$VENV/bin/python" ] || python3 -m venv "$VENV"
+          "$VENV/bin/pip" install -q requests pandas
+          echo "$VENV/bin" >> "$GITHUB_PATH"
+      - name: Snapshot
+        run: python src/weekly/betfair_live.py
+      - name: Commit snapshot
+        run: |
+          git config user.name "golf-bot"; git config user.email "golf-bot@users.noreply.github.com"
+          git add data/live
+          git diff --cached --quiet && exit 0
+          git commit -m "prices: snapshot $(date -u +%Y-%m-%dT%H:%M)"
+          for i in 1 2 3; do git pull --rebase -q && git push -q && break; sleep 5; done

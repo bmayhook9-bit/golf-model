@@ -36,9 +36,15 @@ def load_isn(fn):
 def main(isn_fn=None, price_fn=None):
     isn_fn = isn_fn or latest('inbox/isn/*.csv'); price_fn = price_fn or latest('data/live/prices_*.csv')
     flags = history_flags()
+    lines = [f"# Golf shortlist - {dt.date.today().isoformat()}", ""]
+    if not price_fn:
+        lines += ["**No Betfair price snapshot yet** - check the Mac runner (Actions > betfair-prices)."]
+        md = '\n'.join(lines); os.makedirs('reports', exist_ok=True); open('reports/latest.md', 'w').write(md); print(md); return
     P = pd.read_csv(price_fn)
-    lines = [f"# Golf shortlist - {dt.date.today().isoformat()}", "",
-             f"Prices: `{os.path.basename(price_fn)}` · ISN model: `{os.path.basename(isn_fn) if isn_fn else 'none'}`", ""]
+    age_h = (pd.Timestamp.now(tz='UTC') - pd.to_datetime(P.snapshot.iloc[0], utc=True)).total_seconds() / 3600
+    lines += [f"Prices: `{os.path.basename(price_fn)}` ({age_h:.0f}h old) · ISN model: `{os.path.basename(isn_fn) if isn_fn else 'none'}`", ""]
+    if age_h > 12:
+        lines += [f"**Warning: prices are {age_h:.0f} hours old** - the Mac snapshot probably didn't run. Check prices before betting.", ""]
     win = P[(P.market_type == 'WINNER') & (P.status == 'ACTIVE')].copy()
     for ev, g in win.groupby('event'):
         g = g.copy()

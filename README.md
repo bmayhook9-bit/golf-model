@@ -6,10 +6,14 @@ measured against Betfair prices, plus a weekly value shortlist.
 ## Status
 - [x] Data spike: ESPN leaderboards (PGA hole-by-hole; DPWT rounds + tee times from ~2021)
 - [x] Betfair BASIC historic golf (2023-2026): winner + top 5/10/20 closing prices
-- [ ] Results/scorecard history, both tours
+- [x] Results/scorecard history, both tours (ESPN, 2019-26; DPWT rounds from 2021, PGA hole-by-hole ~365 events)
+- [x] Betfair prices linked to events/players (~300 events 2023-26, 288/304 winners priced)
 - [ ] Player-event table + build-up features
 - [ ] Winner-profile report
 - [ ] Weekly pipeline (GitHub Actions)
 
 ## Layout
 - `src/betfair_extract.py` - Betfair BASIC files -> `data/betfair_prices.csv`
+- `src/espn_fetch.py`, `src/espn_meta.py` - raw ESPN scoreboards + course metadata
+- `src/espn_parse.py` - -> `data/events.csv`, `data/results.csv`, `data/holes.csv`
+- `src/link_prices.py` - -> `data/player_event.csv` (results + closing prices)

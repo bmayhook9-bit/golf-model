@@ -14,6 +14,13 @@ R['rel'] = R.groupby(['tour','event_id','rnd']).s.transform('mean') - R.s   # + 
 R = R.sort_values(['key','start','rnd'])
 HL = 40   # half-life in rounds
 alpha = 1 - 0.5 ** (1 / HL)
+R['raw'] = R.rel
+# field-strength adjustment: beating a strong field is worth more. Two passes:
+# rating -> event field strength (mean pre-event rating) -> adjusted round score -> rating
+for _ in range(2):
+    R['ew'] = R.groupby('key').rel.transform(lambda s: s.shift(1).ewm(alpha=alpha, min_periods=12).mean())
+    fs = R.groupby(['tour','event_id']).ew.transform('mean')
+    R['rel'] = R.raw + (fs - fs.mean()).fillna(0)
 R['ew'] = R.groupby('key').rel.transform(lambda s: s.shift(1).ewm(alpha=alpha, min_periods=12).mean())
 R['n'] = R.groupby('key').cumcount()
 # rating entering each event = value at its first round

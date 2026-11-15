@@ -5,6 +5,9 @@ import sys, os, datetime as dt
 import pandas as pd, numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from common import norm, match_names, latest, stake_for
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+import json
+from rapidfuzz import fuzz
 
 EDGE_MIN = 0.20          # ISN probability x Betfair price - 1
 MAX_PRICE = 200.0        # ignore deep long shots: thin markets, noisy prices
@@ -26,12 +29,50 @@ def history_flags():
                       last3=' / '.join('MC' if pd.isna(p) else f'{int(p)}' for p in last.pos[::-1]))
     return out
 
+_CACHE = {}
+def buildup_rank(event_name, players, tour):
+    """Run the build-up model for an upcoming field. Returns DataFrame player, p_win, p_t5, why."""
+    import features as FT, buildup_model as BM
+    if 'base' not in _CACHE:
+        _CACHE['base'] = FT.load_base(); _CACHE['cur'] = BM.current_ratings()
+        _CACHE['models'] = json.load(open('models/buildup.json'))
+    base = _CACHE['base']
+    hist_names = base.player.dropna().unique()
+    mp = match_names(players, hist_names)
+    E = pd.read_csv('data/events.csv')
+    nm = norm(str(event_name).replace('PGA ', '').replace('DPW Tour ', ''))
+    sc = E.name.map(lambda n: fuzz.token_set_ratio(nm, norm(n)))
+    course = E.loc[sc.idxmax(), 'course'] if len(sc) and sc.max() >= 70 else None
+    up = pd.DataFrame({'player': [mp.get(p, p) for p in players], 'shown': players})
+    up['tour'] = tour; up['event_id'] = 'upcoming'; up['name'] = event_name; up['course'] = course
+    up['start'] = (pd.Timestamp.now(tz='UTC') + pd.Timedelta(days=3)).strftime('%Y-%m-%dT%H:%MZ')
+    F = FT.build(pd.concat([base, up.drop(columns='shown')], ignore_index=True))
+    F = F[F.event_id.astype(str) == 'upcoming'].copy()
+    F['key'] = BM.key(F.player); F['rating'] = F.key.map(_CACHE['cur'])
+    F = BM.prepare(F)
+    F['p_win'], F['p_t5'] = BM.predict(F, _CACHE['models'])
+    F['why'] = [BM.reasons(r, _CACHE['models']) for _, r in F.iterrows()]
+    F['shown'] = F.player.map(dict(zip(up.player, up.shown)))
+    return F.sort_values('p_win', ascending=False)[['shown', 'p_win', 'p_t5', 'why']]
+
 def load_isn(fn):
     d = pd.read_csv(fn)
     d['isn_p'] = 100 / (d['Win Odds'] + 100)          # ISN gives American-style win odds
     d['isn_p'] = d.isn_p / d.isn_p.sum()               # fair book, sums to 1
     d['isn_price'] = 1 / d.isn_p
     return d[['Player', 'isn_p', 'isn_price', 'Model Rank']]
+
+def buildup_lines(ev, players, tour, backs, flags, n=15):
+    try:
+        B = buildup_rank(ev, players, tour).head(n)
+    except Exception as e:
+        return [f"_Build-up ranking unavailable: {e}_", ""]
+    out = [f"**Who's set up - build-up ranking: {ev}** (rating, form, schedule, course history. Ranks well, but does NOT beat the market on its own: compare its price with what's on offer)", "",
+           "| # | Player | Model win % | Model price | Top 5 % | Betfair back | Last 3 | Why |", "|---|---|---|---|---|---|---|---|"]
+    for i, r in enumerate(B.itertuples(), 1):
+        b = backs.get(r.shown)
+        out.append(f"| {i} | {r.shown} | {r.p_win:.1%} | {1 / r.p_win:.1f} | {r.p_t5:.0%} | {b if b and b == b else '-'} | {flags.get(norm(r.shown), {}).get('last3', '')} | {r.why} |")
+    return out + [""]
 
 def main(isn_fn=None, price_fn=None):
     isn_fn = isn_fn or latest('inbox/isn/*.csv'); price_fn = price_fn or latest('data/live/prices_*.csv')
@@ -86,6 +127,11 @@ def main(isn_fn=None, price_fn=None):
         lines += ["**Form watch** (back < 40.0, top 5 after 54 holes in last 3) - priced in on history, for context", ""]
         lines += [f"- {r.runner} @ {r.back} (last 3: {r.last3})" for r in fw.itertuples()] or ["- none"]
         lines.append("")
+        lines += buildup_lines(ev, list(g.runner), 'pga' if is_pga else 'eur', dict(zip(g.runner, g.back)), flags)
+    if isn_fn and win.empty:
+        # no Betfair markets yet: build-up ranking for the ISN field
+        I0 = load_isn(isn_fn)
+        lines += buildup_lines(os.path.basename(isn_fn).split('_', 1)[-1].replace('.csv', '').replace('-', ' '), list(I0.Player), 'pga', {}, flags)
     if isn_fn:
         I = load_isn(isn_fn).sort_values('isn_p', ascending=False).head(25)
         bf = {}

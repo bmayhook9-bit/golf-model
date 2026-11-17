@@ -1,7 +1,7 @@
 {
- "generated": "2026-11-17T18:51:45.450799+00:00",
- "prices_file": "prices_20261117T0938.csv",
- "prices_age_h": 9.2,
+ "generated": "2026-11-17T20:29:25.900161+00:00",
+ "prices_file": "prices_20261117T1957.csv",
+ "prices_age_h": 0.5,
  "isn_file": "2026-11-16_rsm-classic.csv",
  "edge_min": 0.2,
  "lead_max_price": 20.0

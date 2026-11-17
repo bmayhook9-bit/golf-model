@@ -1,22 +1,22 @@
 # Golf shortlist - 2026-11-17
 
-Prices: `prices_20261117T0938.csv` (5h old) · ISN model: `2026-11-14_rsm-classic.csv`
+Prices: `prices_20261117T0938.csv` (9h old) · ISN model: `2026-11-16_rsm-classic.csv`
 
 ## PGA The RSM Classic 2026
 
-**Value vs ISN** (edge >= 20%; matched 136/139 ISN players)
+**Value vs ISN** (edge >= 20%; matched 140/141 ISN players)
 
 | Player | Back | ISN fair | Edge | Stake to win £500 | Last 3 | Flags |
 |---|---|---|---|---|---|---|
-| Chris Kirk | 55.0 | 34.2 | +61% | £9.26 | MC / 12 / 6 | contend_l3 |
-| Christiaan Bezuidenhout | 85.0 | 56.2 | +51% | £5.95 | MC / MC / 19 |  |
-| Brian Harman | 36.0 | 25.1 | +44% | £14.29 | 22 / 4 / 30 |  |
-| Zach Bauchou | 100.0 | 75.2 | +33% | £5.05 | 57 / 33 / MC |  |
-| Doug Ghim | 28.0 | 21.1 | +33% | £18.52 | 35 / 6 / 17 | contend_l3 |
-| John Parry | 200.0 | 151.5 | +32% | £2.51 | 64 / 25 / MC |  |
-| Andrew Novak | 38.0 | 30.6 | +24% | £13.51 | MC / 1 / 44 | won_last3, contend_l3 |
-| Billy Horschel | 120.0 | 99.0 | +21% | £4.2 | 35 / MC / MC |  |
-| Mac Meissner | 90.0 | 74.6 | +21% | £5.62 | 10 / 48 / 23 |  |
+| Mac Meissner | 90.0 | 51.0 | +76% | £5.62 | 10 / 48 / 23 |  |
+| Christiaan Bezuidenhout | 85.0 | 51.9 | +64% | £5.95 | MC / MC / 19 |  |
+| Emiliano Grillo | 160.0 | 111.1 | +44% | £3.14 | 31 / 21 / 58 |  |
+| Jordan Smith | 46.0 | 33.8 | +36% | £11.11 | 7 / 8 / 16 |  |
+| Brian Harman | 36.0 | 26.5 | +36% | £14.29 | 22 / 4 / 30 |  |
+| Billy Horschel | 120.0 | 95.2 | +26% | £4.2 | 35 / MC / MC |  |
+| Ben Silverman | 200.0 | 161.3 | +24% | £2.51 | 33 / 19 / 3 | contend_l3 |
+| Zac Blair | 110.0 | 90.9 | +21% | £4.59 | 18 / 25 / MC |  |
+| Chris Kirk | 55.0 | 45.4 | +21% | £9.26 | MC / 12 / 6 | contend_l3 |
 
 **Tracked lead** (PGA, back < 20.0, won in last 3 starts: 22 wins v 14.3 expected, 2023-26)
 
@@ -50,37 +50,37 @@ Prices: `prices_20261117T0938.csv` (5h old) · ISN model: `2026-11-14_rsm-classi
 | 14 | Jackson Koivun | 1.7% | 58.5 | 8% | 21.0 | MC / 21 / 65 | class (rating), top 5s in last 5 |
 | 15 | Chad Ramey | 1.6% | 61.1 | 7% | 120.0 | 1 / 25 / 40 | class (rating), won in last 3, top 5s in last 5 |
 
-## Target prices - 2026-11-14_rsm-classic.csv
+## Target prices - 2026-11-16_rsm-classic.csv
 
 Check bookmaker prices against these. Back only at or above the target (ISN fair price + 20%).
 
 | ISN rank | Player | ISN fair | Target (win) | Betfair back | Last 3 | Lead? |
 |---|---|---|---|---|---|---|
-| 1 | Ludvig Åberg | 14.1 | 16.9 | - | 7 / 11 / 27 |  |
-| 2 | Doug Ghim | 21.1 | 25.3 | 28.0 | 35 / 6 / 17 |  |
-| 3 | Brian Harman | 25.1 | 30.1 | 36.0 | 22 / 4 / 30 |  |
-| 4 | Andrew Novak | 30.6 | 36.7 | 38.0 | MC / 1 / 44 |  |
-| 5 | Chris Kirk | 34.2 | 41.1 | 55.0 | MC / 12 / 6 |  |
-| 6 | Ben James | 35.5 | 42.6 | 20.0 | 2 / 16 / MC |  |
-| 7 | Jackson Koivun | 42.4 | 50.9 | 21.0 | MC / 21 / 65 |  |
-| 8 | J.T. Poston | 43.9 | 52.6 | 34.0 | 5 / 22 / 24 |  |
-| 9 | Maverick McNealy | 44.8 | 53.8 | 36.0 | 59 / MC / 7 |  |
-| 10 | Jordan Smith | 52.5 | 63.0 | 46.0 | 7 / 8 / 16 |  |
-| 11 | Matt Wallace | 52.5 | 63.0 | 46.0 | 16 / 27 / 50 |  |
-| 12 | Keith Mitchell | 52.5 | 63.0 | 36.0 | 8 / 2 / 34 |  |
-| 13 | Eric Cole | 54.1 | 64.9 | 60.0 | MC / 25 / 65 |  |
-| 14 | Christiaan Bezuidenhout | 56.2 | 67.4 | 85.0 | MC / MC / 19 |  |
-| 15 | Michael Brennan | 58.1 | 69.8 | 20.0 | 1 / 13 / 10 |  |
-| 16 | Mackenzie Hughes | 61.0 | 73.2 | 65.0 | MC / MC / 4 |  |
-| 17 | Michael Thorbjornsen | 61.4 | 73.6 | 30.0 | 33 / 37 / 47 |  |
-| 18 | Blades Brown | 62.1 | 74.5 | 25.0 | 4 / 1 / 19 |  |
-| 19 | Denny McCarthy | 62.9 | 75.5 | 48.0 | 6 / 23 / 15 |  |
-| 20 | Harry Hall | 63.3 | 76.0 | 55.0 | 12 / 23 / 13 |  |
-| 21 | Harris English | 66.7 | 80.0 | 46.0 | 42 / MC / 71 |  |
-| 22 | Austin Smotherman | 72.5 | 87.0 | 44.0 | 7 / 1 / 1 |  |
-| 23 | Mac Meissner | 74.6 | 89.6 | 90.0 | 10 / 48 / 23 |  |
-| 24 | Zach Bauchou | 75.2 | 90.2 | 100.0 | 57 / 33 / MC |  |
-| 25 | Ben Kohles | 85.5 | 102.6 | 46.0 | 2 / 25 / 17 |  |
+| 1 | Doug Ghim | 25.8 | 30.9 | 28.0 | 35 / 6 / 17 |  |
+| 2 | Brian Harman | 26.5 | 31.8 | 36.0 | 22 / 4 / 30 |  |
+| 3 | Ben James | 31.6 | 38.0 | 20.0 | 2 / 16 / MC |  |
+| 4 | Jordan Smith | 33.8 | 40.5 | 46.0 | 7 / 8 / 16 |  |
+| 5 | Andrew Novak | 36.5 | 43.8 | 38.0 | MC / 1 / 44 |  |
+| 6 | Maverick McNealy | 42.4 | 50.8 | 36.0 | 59 / MC / 7 |  |
+| 7 | Blades Brown | 45.1 | 54.2 | 25.0 | 4 / 1 / 19 |  |
+| 8 | J.T. Poston | 45.1 | 54.2 | 34.0 | 5 / 22 / 24 |  |
+| 9 | Chris Kirk | 45.4 | 54.5 | 55.0 | MC / 12 / 6 |  |
+| 10 | Jackson Koivun | 46.3 | 55.5 | 21.0 | MC / 21 / 65 |  |
+| 11 | Austin Smotherman | 47.6 | 57.1 | 44.0 | 7 / 1 / 1 |  |
+| 12 | Mac Meissner | 51.0 | 61.2 | 90.0 | 10 / 48 / 23 |  |
+| 13 | Christiaan Bezuidenhout | 51.9 | 62.3 | 85.0 | MC / MC / 19 |  |
+| 14 | Michael Brennan | 51.9 | 62.3 | 20.0 | 1 / 13 / 10 |  |
+| 15 | Keith Mitchell | 52.9 | 63.5 | 36.0 | 8 / 2 / 34 |  |
+| 16 | Harry Hall | 53.7 | 64.5 | 55.0 | 12 / 23 / 13 |  |
+| 17 | Michael Thorbjornsen | 54.0 | 64.8 | 30.0 | 33 / 37 / 47 |  |
+| 18 | Matt Wallace | 54.9 | 65.9 | 46.0 | 16 / 27 / 50 |  |
+| 19 | Ben Kohles | 56.5 | 67.8 | 46.0 | 2 / 25 / 17 |  |
+| 20 | Eric Cole | 58.5 | 70.2 | 60.0 | MC / 25 / 65 |  |
+| 21 | Denny McCarthy | 64.1 | 76.9 | 48.0 | 6 / 23 / 15 |  |
+| 22 | Mackenzie Hughes | 71.4 | 85.7 | 65.0 | MC / MC / 4 |  |
+| 23 | Harris English | 72.4 | 86.9 | 46.0 | 42 / MC / 71 |  |
+| 24 | Pierceson Coody | 73.8 | 88.5 | 60.0 | 18 / 33 / 6 |  |
+| 25 | Kristoffer Ventura | 73.8 | 88.5 | 70.0 | 10 / 50 / 2 |  |
 
 ## Last week's winners: how they arrived
 

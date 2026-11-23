@@ -4,6 +4,7 @@ How each winner arrived. Ranks are within the field before the event; model = bu
 
 | Date | Event | Winner | Betfair close | Market rank | Model rank | Rating rank | Last 5 (recent first) | Build-up |
 |---|---|---|---|---|---|---|---|---|
+| 19 Nov | The RSM Classic | Marco Penge | - | - | 46 | 28 of 147 | 63 / MC / 40 / 20 / 68 | played week before, course debut |
 | 12 Nov | Austin Championship pres. by Compliance Solutions | Chad Ramey | - | - | 47 | 63 of 120 | 25 / 40 / 59 / 40 / 33 | played week before, course debut |
 | 12 Nov | DP World Tour Championship | Tyrrell Hatton | - | - | 8 | 5 of 50 | 2 / MC / MC / 27 / MC | top 5 last start, contended in last 3, played week before, strong course history, 3 MCs in last 5 |
 | 05 Nov | World Wide Technology Championship | Blades Brown | - | - | 13 | 11 of 120 | 19 / 17 / MC / 11 / 12 | played week before, course debut |
@@ -12,8 +13,8 @@ How each winner arrived. Ranks are within the field before the event; model = bu
 | 22 Oct | Butterfield Bermuda Championship | Austin Smotherman | - | - | 5 | 27 of 120 | 1 / 17 / 67 / MC / 24 | won in last 3, top 5 last start, contended in last 3 |
 | 22 Oct | Genesis Championship | Yuto Katsuragawa | - | - | 39 | 51 of 126 | 60 / MC / 28 / 27 / MC | played week before, 2 MCs in last 5 |
 | 15 Oct | DP World India Championship | Eugenio Chacarra | - | - | 3 | 4 of 144 | 2 / 3 / 21 / 36 / 4 | 3 top 5s in last 5, contended in last 3, played week before |
-| 08 Oct | Open de España pres. by Madrid | Grant Forrest | - | - | 91 | 96 of 132 | MC / MC / MC / MC / MC | played week before, strong course history, 5 MCs in last 5 |
 | 08 Oct | Baycurrent Classic | Michael Brennan | - | - | 11 | 13 of 72 | 13 / 10 / 42 / 1 / 15 | played week before, course debut |
+| 08 Oct | Open de España pres. by Madrid | Grant Forrest | - | - | 91 | 96 of 132 | MC / MC / MC / MC / MC | played week before, strong course history, 5 MCs in last 5 |
 | 01 Oct | Bank of Utah Championship | Austin Smotherman | - | - | 58 | 58 of 120 | 17 / 67 / MC / 24 / MC | 2 MCs in last 5 |
 | 01 Oct | Alfred Dunhill Links Championship | Adrian Meronk | - | - | 25 | 45 of 168 | 50 / 62 / 14 / 44 / 15 | played week before |
 | 24 Sep | FedEx Open de France | Matt Fitzpatrick | - | - | 3 | 1 of 144 | 6 / 21 / 28 / 12 / MC | played week before, course debut |
@@ -23,8 +24,8 @@ How each winner arrived. Ranks are within the field before the event; model = bu
 | 03 Sep | Omega European Masters | Thriston Lawrence | - | - | 52 | 58 of 156 | 30 / MC / MC / MC / 74 | played week before, strong course history, 3 MCs in last 5 |
 | 27 Aug | Husqvarna British Masters hosted by Sir Nick Faldo | Joe Dean | - | - | 42 | 40 of 156 | 24 / 39 / MC / 9 / MC | played week before, 2 MCs in last 5 |
 | 27 Aug | TOUR Championship | Scottie Scheffler | - | - | 1 | 1 of 30 | 12 / 1 / 2 / 4 / MC | won in last 3, 3 top 5s in last 5, contended in last 3, played week before, strong course history |
-| 20 Aug | Nexo Championship | Scott Jamieson | - | - | 63 | 71 of 138 | 61 / MC / 71 / 38 / 70 | played week before |
 | 20 Aug | BMW Championship | Wyndham Clark | - | - | 10 | 15 of 50 | 5 / MC / MC / 13 / 5 | 2 top 5s in last 5, played week before, course debut, 2 MCs in last 5 |
+| 20 Aug | Nexo Championship | Scott Jamieson | - | - | 63 | 71 of 138 | 61 / MC / 71 / 38 / 70 | played week before |
 | 13 Aug | FedEx St. Jude Championship | Scottie Scheffler | - | - | 1 | 1 of 69 | 2 / 4 / MC / 2 / 4 | 4 top 5s in last 5, strong course history |
 | 13 Aug | Danish Golf Championship | Jeff Winther | - | - | 31 | 34 of 144 | 16 / 6 / MC / MC / 17 | first start after break, course debut, 2 MCs in last 5 |
 | 06 Aug | Wyndham Championship | Michael Brennan | - | - | 42 | 37 of 147 | 15 / 24 / 53 / 52 / 33 | contended in last 3, played week before, course debut |
@@ -36,36 +37,35 @@ How each winner arrived. Ranks are within the field before the event; model = bu
 | 09 Jul | Genesis Scottish Open | Tom Kim | - | - | 39 | 74 of 156 | 46 / 3 / 15 / 54 / 54 | contended in last 3, played week before, strong course history |
 | 02 Jul | John Deere Classic | Chris Gotterup | - | - | 5 | 2 of 144 | 30 / 43 / 27 / 10 / 14 | played week before, strong course history |
 | 02 Jul | BMW International Open | Michael Hollick | - | - | 104 | 90 of 156 | MC / 28 / MC / MC / 70 | played week before, course debut, 3 MCs in last 5 |
-| 25 Jun | DS Automobiles 83° Open d'Italia | Eugenio Chacarra | - | - | 2 | 7 of 156 | 1 / 12 / 22 / 10 / 18 | won in last 3, top 5 last start, contended in last 3, course debut |
 | 25 Jun | Travelers Championship | Viktor Hovland | - | - | 16 | 15 of 72 | MC / 3 / MC / 31 / 38 | played week before, strong course history, 2 MCs in last 5 |
+| 25 Jun | DS Automobiles 83° Open d'Italia | Eugenio Chacarra | - | - | 2 | 7 of 156 | 1 / 12 / 22 / 10 / 18 | won in last 3, top 5 last start, contended in last 3, course debut |
 | 18 Jun | U.S. Open | Wyndham Clark | - | - | 11 | 34 of 156 | 11 / 3 / 1 / MC / 16 | won in last 3, 2 top 5s in last 5, contended in last 3, played week before, course debut |
 | 11 Jun | RBC Canadian Open | Bud Cauley | - | - | 23 | 29 of 147 | 22 / 26 / 37 / 38 / 7 | played week before, course debut |
-| 04 Jun | the Memorial Tournament pres. by Workday | J.T. Poston | - | - | 52 | 54 of 72 | 35 / MC / 24 / 49 / 60 | played week before |
 | 04 Jun | KLM Open | Eugenio Chacarra | - | - | 6 | 5 of 155 | 12 / 22 / 10 / 18 / 33 | played week before |
+| 04 Jun | the Memorial Tournament pres. by Workday | J.T. Poston | - | - | 52 | 54 of 72 | 35 / MC / 24 / 49 / 60 | played week before |
 | 28 May | Charles Schwab Challenge | Russell Henley | - | - | 2 | 2 of 132 | MC / 49 / 25 / 3 / MC | 2 MCs in last 5 |
 | 28 May | Austrian Alpine Open pres. by Kitzbühel Tirol | Kota Kaneko | - | - | 9 | 5 of 156 | 2 / MC / MC / 9 / 19 | top 5 last start, played week before, course debut, 2 MCs in last 5 |
 | 21 May | THE CJ CUP Byron Nelson | Wyndham Clark | - | - | 20 | 12 of 147 | MC / 16 / 21 / MC / MC | played week before, strong course history, 3 MCs in last 5 |
 | 21 May | Soudal Open | Richard Sterne | - | - | 103 | 82 of 156 | MC / MC / MC / 52 / MC | 4 MCs in last 5 |
 | 14 May | PGA Championship | Aaron Rai | - | - | 54 | 62 of 156 | 5 / 48 / MC / MC / 23 | top 5 last start, contended in last 3, played week before, course debut, 2 MCs in last 5 |
-| 07 May | Estrella Damm Catalunya Championship | Yurav Premlall | - | - | 128 | 125 of 156 | MC / 31 / MC / MC / 61 | played week before, course debut, 3 MCs in last 5 |
 | 07 May | ONEflight Myrtle Beach Classic | Brandt Snedeker | - | - | 59 | 51 of 123 | 39 / 18 / MC / MC / MC | contended in last 3, first start after break, 3 MCs in last 5 |
 | 07 May | Truist Championship | Kristoffer Reitan | - | - | 53 | 35 of 72 | 14 / 41 / 10 / MC / MC | contended in last 3, played week before, course debut, 2 MCs in last 5 |
+| 07 May | Estrella Damm Catalunya Championship | Yurav Premlall | - | - | 128 | 125 of 156 | MC / 31 / MC / MC / 61 | played week before, course debut, 3 MCs in last 5 |
 | 30 Apr | Cadillac Championship | Cameron Young | - | - | 2 | 5 of 72 | 25 / 3 / 1 / 3 / 7 | won in last 3, 3 top 5s in last 5, contended in last 3, course debut |
 | 30 Apr | Turkish Airlines Open | Mikael Lindberg | - | - | 18 | 24 of 156 | 3 / MC / 45 / 29 / 36 | top 5 last start, contended in last 3, played week before, course debut |
 | 23 Apr | Volvo China Open | Bernd Wiesberger | - | - | 27 | 31 of 156 | MC / 12 / 14 / 42 / 62 | first start after break |
 | 16 Apr | RBC Heritage | Matt Fitzpatrick | - | - | 3 | 4 of 82 | 18 / 1 / 2 / 41 / 24 | won in last 3, 2 top 5s in last 5, contended in last 3, played week before, strong course history |
 | 09 Apr | Masters Tournament | Rory McIlroy | - | - | 5 | 2 of 91 | 46 / MC / 2 / 14 / 33 | contended in last 3, first start after break, strong course history |
 | 02 Apr | Valero Texas Open | J.J. Spaun | - | - | 14 | 12 of 132 | MC / 24 / MC / MC / 45 | strong course history, 3 MCs in last 5 |
-| 26 Mar | Texas Children's Houston Open | Gary Woodland | - | - | 67 | 69 of 135 | 14 / MC / MC / 64 / MC | played week before, strong course history, 3 MCs in last 5 |
 | 26 Mar | Hero Indian Open | Alex Fitzpatrick | - | - | 13 | 9 of 138 | 6 / 14 / 23 / MC / 16 | contended in last 3, strong course history |
+| 26 Mar | Texas Children's Houston Open | Gary Woodland | - | - | 67 | 69 of 135 | 14 / MC / MC / 64 / MC | played week before, strong course history, 3 MCs in last 5 |
 | 19 Mar | Hainan Classic pres. by MAEXTRO | Jordan Gumberg | - | - | 97 | 70 of 120 | 28 / MC / 42 / MC / MC | course debut, 3 MCs in last 5 |
 | 19 Mar | Valspar Championship | Matt Fitzpatrick | - | - | 3 | 2 of 135 | 2 / 41 / 24 / 14 / 9 | top 5 last start, contended in last 3, played week before, strong course history |
 | 12 Mar | THE PLAYERS Championship | Cameron Young | - | - | 14 | 15 of 123 | 3 / 7 / 55 / 41 / 22 | top 5 last start, contended in last 3, played week before |
 | 05 Mar | Puerto Rico Open | Ricky Castillo | - | - | 6 | 11 of 120 | 5 / 43 / 44 / 31 / MC | top 5 last start, played week before |
 | 05 Mar | Arnold Palmer Invitational pres. by Mastercard | Akshay Bhatia | - | - | 36 | 29 of 72 | 16 / 6 / 3 / MC / MC | contended in last 3, 2 MCs in last 5 |
-| 05 Mar | Joburg Open | Dan Bradbury | - | - | 18 | 19 of 156 | MC / MC / 5 / MC / 41 | played week before, strong course history, 3 MCs in last 5 |
 
 **Summary**
 
 - Winners: 60 · in model top 10: 33% · in market top 10: nan% (of 0 priced)
-- Median rating rank: 24 · won in last 3: 10% · 2+ top 5s in last 5: 13% · played week before: 65%
+- Median rating rank: 26 · won in last 3: 10% · 2+ top 5s in last 5: 13% · played week before: 65%

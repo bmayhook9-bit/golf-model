@@ -1,8 +1,8 @@
-# Golf shortlist - 2026-11-23
+# Golf shortlist - 2026-11-24
 
-Prices: `prices_20261119T1406.csv` (106h old) · ISN model: `2026-11-16_rsm-classic.csv`
+Prices: `prices_20261119T1944.csv` (122h old) · ISN model: `2026-11-16_rsm-classic.csv`
 
-**Warning: prices are 106 hours old** - the Mac snapshot probably didn't run. Check prices before betting.
+**Warning: prices are 122 hours old** - the Mac snapshot probably didn't run. Check prices before betting.
 
 No pre-tournament PGA Tour or DP World Tour win markets in this snapshot (markets usually open early in the week).
 
@@ -63,8 +63,6 @@ Check bookmaker prices against these. Back only at or above the target (ISN fair
 | Event | Winner | Betfair close | Market rank | Model rank | Last 5 | Build-up |
 |---|---|---|---|---|---|---|
 | The RSM Classic | Marco Penge | - | - | 46 | 63 / MC / 40 / 20 / 68 | played week before, course debut |
-| Austin Championship pres. by Compliance Solutions | Chad Ramey | - | - | 47 | 25 / 40 / 59 / 40 / 33 | played week before, course debut |
-| DP World Tour Championship | Tyrrell Hatton | - | - | 8 | 2 / MC / MC / 27 / MC | top 5 last start, contended in last 3, played week before, strong course history, 3 MCs in last 5 |
 
 Full season: `reports/winner_case_studies.md`
 
